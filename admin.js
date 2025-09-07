@@ -263,6 +263,17 @@ async function onDelete(e) {
             renderInquiriesRows(inquiries);
         } catch (error) {
             console.error('Error loading inquiries:', error);
+            // Show error message in the table
+            if (inquiriesTableBody) {
+                inquiriesTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:20px;color:#ef4444;">
+                            Error loading inquiries: ${error.message}<br>
+                            <small>Make sure you are logged in to the admin panel.</small>
+                        </td>
+                    </tr>
+                `;
+            }
         }
     }
     
@@ -336,6 +347,12 @@ async function onDelete(e) {
             console.error('Error deleting inquiry:', error);
             alert('Error deleting inquiry: ' + error.message);
         }
+    }
+
+    // Add refresh button event listener
+    const refreshInquiriesBtn = document.getElementById('refreshInquiries');
+    if (refreshInquiriesBtn) {
+        refreshInquiriesBtn.addEventListener('click', refreshInquiries);
     }
 
     // initial load after admin.html auth gate
