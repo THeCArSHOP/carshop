@@ -318,14 +318,16 @@ async function onDelete(e) {
                         <span style="font-size:13px;color:#e7e9ee;" title="${message}">${truncatedMessage}</span>
                     </td>
                     <td style="vertical-align:middle;text-align:center;padding:8px;">
-                        <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Delete</button>
+                        <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:bold;min-width:60px;">Delete</button>
                     </td>
                 </tr>
             `;
         }).join('');
         
         // Add event listeners for delete buttons
-        inquiriesTableBody.querySelectorAll('.delete-inquiry').forEach(btn => btn.addEventListener('click', onDeleteInquiry));
+        const deleteButtons = inquiriesTableBody.querySelectorAll('.delete-inquiry');
+        console.log('Found delete buttons:', deleteButtons.length);
+        deleteButtons.forEach(btn => btn.addEventListener('click', onDeleteInquiry));
     }
     
     async function onDeleteInquiry(e) {
