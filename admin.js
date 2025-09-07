@@ -298,27 +298,27 @@ async function onDelete(e) {
             
             return `
                 <tr data-id="${inquiry.id}" style="height:40px;">
-                    <td style="vertical-align:middle;padding:8px;width:120px;">
-                        <div style="font-size:12px;color:#e7e9ee;">${createdAt.toLocaleDateString()}</div>
-                        <div style="font-size:11px;color:#9aa3b2;">${createdAt.toLocaleTimeString()}</div>
+                    <td style="vertical-align:middle;padding:6px;width:100px;">
+                        <div style="font-size:11px;color:#e7e9ee;">${createdAt.toLocaleDateString()}</div>
+                        <div style="font-size:10px;color:#9aa3b2;">${createdAt.toLocaleTimeString()}</div>
                     </td>
-                    <td style="vertical-align:middle;padding:8px;width:150px;">
-                        <strong style="font-size:14px;color:#e7e9ee;">${inquiry.name || 'N/A'}</strong>
+                    <td style="vertical-align:middle;padding:6px;width:120px;">
+                        <strong style="font-size:13px;color:#e7e9ee;">${inquiry.name || 'N/A'}</strong>
                     </td>
-                    <td style="vertical-align:middle;padding:8px;width:200px;">
-                        <a href="mailto:${inquiry.email}" style="color:#3b82f6;text-decoration:none;font-size:13px;">${inquiry.email || 'N/A'}</a>
+                    <td style="vertical-align:middle;padding:6px;width:160px;">
+                        <a href="mailto:${inquiry.email}" style="color:#3b82f6;text-decoration:none;font-size:12px;">${inquiry.email || 'N/A'}</a>
                     </td>
-                    <td style="vertical-align:middle;padding:8px;width:120px;">
-                        ${inquiry.phone ? `<a href="tel:${inquiry.phone}" style="color:#3b82f6;text-decoration:none;font-size:13px;">${inquiry.phone}</a>` : '<span style="color:#9aa3b2;font-size:13px;">N/A</span>'}
+                    <td style="vertical-align:middle;padding:6px;width:100px;">
+                        ${inquiry.phone ? `<a href="tel:${inquiry.phone}" style="color:#3b82f6;text-decoration:none;font-size:12px;">${inquiry.phone}</a>` : '<span style="color:#9aa3b2;font-size:12px;">N/A</span>'}
                     </td>
-                    <td style="vertical-align:middle;padding:8px;width:150px;">
-                        ${car ? `<span style="font-size:13px;color:#e7e9ee;">${car.year} ${car.make} ${car.model}</span>` : '<span style="color:#9aa3b2;font-size:13px;">General Inquiry</span>'}
+                    <td style="vertical-align:middle;padding:6px;width:120px;">
+                        ${car ? `<span style="font-size:12px;color:#e7e9ee;">${car.year} ${car.make} ${car.model}</span>` : '<span style="color:#9aa3b2;font-size:12px;">General</span>'}
                     </td>
-                    <td style="vertical-align:middle;padding:8px;width:200px;">
-                        <span style="font-size:13px;color:#e7e9ee;" title="${message}">${truncatedMessage}</span>
+                    <td style="vertical-align:middle;padding:6px;width:180px;">
+                        <span style="font-size:12px;color:#e7e9ee;" title="${message}">${truncatedMessage}</span>
                     </td>
-                    <td style="vertical-align:middle;text-align:center;padding:8px;width:100px;">
-                        <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:bold;min-width:60px;">Delete</button>
+                    <td style="vertical-align:middle;text-align:center;padding:6px;width:80px;">
+                        <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;min-width:50px;">Delete</button>
                     </td>
                 </tr>
             `;
