@@ -297,28 +297,28 @@ async function onDelete(e) {
             const truncatedMessage = message.length > 50 ? message.substring(0, 50) + '...' : message;
             
             return `
-                <tr data-id="${inquiry.id}" style="height:40px;">
-                    <td style="vertical-align:middle;padding:6px;width:100px;">
-                        <div style="font-size:11px;color:#e7e9ee;">${createdAt.toLocaleDateString()}</div>
-                        <div style="font-size:10px;color:#9aa3b2;">${createdAt.toLocaleTimeString()}</div>
+                <tr data-id="${inquiry.id}" style="height:35px;">
+                    <td style="vertical-align:middle;padding:4px;width:12%;overflow:hidden;">
+                        <div style="font-size:10px;color:#e7e9ee;">${createdAt.toLocaleDateString()}</div>
+                        <div style="font-size:9px;color:#9aa3b2;">${createdAt.toLocaleTimeString()}</div>
                     </td>
-                    <td style="vertical-align:middle;padding:6px;width:120px;">
-                        <strong style="font-size:13px;color:#e7e9ee;">${inquiry.name || 'N/A'}</strong>
+                    <td style="vertical-align:middle;padding:4px;width:15%;overflow:hidden;">
+                        <strong style="font-size:12px;color:#e7e9ee;">${inquiry.name || 'N/A'}</strong>
                     </td>
-                    <td style="vertical-align:middle;padding:6px;width:160px;">
-                        <a href="mailto:${inquiry.email}" style="color:#3b82f6;text-decoration:none;font-size:12px;">${inquiry.email || 'N/A'}</a>
+                    <td style="vertical-align:middle;padding:4px;width:20%;overflow:hidden;">
+                        <a href="mailto:${inquiry.email}" style="color:#3b82f6;text-decoration:none;font-size:11px;">${inquiry.email || 'N/A'}</a>
                     </td>
-                    <td style="vertical-align:middle;padding:6px;width:100px;">
-                        ${inquiry.phone ? `<a href="tel:${inquiry.phone}" style="color:#3b82f6;text-decoration:none;font-size:12px;">${inquiry.phone}</a>` : '<span style="color:#9aa3b2;font-size:12px;">N/A</span>'}
+                    <td style="vertical-align:middle;padding:4px;width:12%;overflow:hidden;">
+                        ${inquiry.phone ? `<a href="tel:${inquiry.phone}" style="color:#3b82f6;text-decoration:none;font-size:11px;">${inquiry.phone}</a>` : '<span style="color:#9aa3b2;font-size:11px;">N/A</span>'}
                     </td>
-                    <td style="vertical-align:middle;padding:6px;width:120px;">
-                        ${car ? `<span style="font-size:12px;color:#e7e9ee;">${car.year} ${car.make} ${car.model}</span>` : '<span style="color:#9aa3b2;font-size:12px;">General</span>'}
+                    <td style="vertical-align:middle;padding:4px;width:15%;overflow:hidden;">
+                        ${car ? `<span style="font-size:11px;color:#e7e9ee;">${car.year} ${car.make} ${car.model}</span>` : '<span style="color:#9aa3b2;font-size:11px;">General</span>'}
                     </td>
-                    <td style="vertical-align:middle;padding:6px;width:180px;">
-                        <span style="font-size:12px;color:#e7e9ee;" title="${message}">${truncatedMessage}</span>
+                    <td style="vertical-align:middle;padding:4px;width:20%;overflow:hidden;">
+                        <span style="font-size:11px;color:#e7e9ee;" title="${message}">${truncatedMessage}</span>
                     </td>
-                    <td style="vertical-align:middle;text-align:center;padding:6px;width:80px;">
-                        <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:bold;min-width:50px;">Delete</button>
+                    <td style="vertical-align:middle;text-align:center;padding:4px;width:6%;">
+                        <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:3px 6px;border-radius:3px;cursor:pointer;font-size:10px;font-weight:bold;">Del</button>
                     </td>
                 </tr>
             `;
