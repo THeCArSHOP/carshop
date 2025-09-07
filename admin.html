@@ -119,20 +119,22 @@
 		<h2>Customer Inquiries</h2>
 		<p style="color:#9aa3b2;margin:6px 0 10px">View and manage customer inquiries from your website.</p>
 		<button id="refreshInquiries" style="background:#3b82f6;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;margin-bottom:15px;">🔄 Refresh Inquiries</button>
-		<table id="inquiriesTable" style="width:100%;border-collapse:collapse;">
-			<thead>
-				<tr style="background:#242938;">
-					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Date</th>
-					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Name</th>
-					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Email</th>
-					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Phone</th>
-					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Car</th>
-					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Message</th>
-					<th style="padding:12px 8px;text-align:center;border-bottom:1px solid #3b82f6;">Actions</th>
-				</tr>
-			</thead>
-			<tbody></tbody>
-		</table>
+		<div style="overflow-x:auto;width:100%;">
+			<table id="inquiriesTable" style="width:100%;border-collapse:collapse;min-width:800px;">
+				<thead>
+					<tr style="background:#242938;">
+						<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;width:120px;">Date</th>
+						<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;width:150px;">Name</th>
+						<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;width:200px;">Email</th>
+						<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;width:120px;">Phone</th>
+						<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;width:150px;">Car</th>
+						<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;width:200px;">Message</th>
+						<th style="padding:12px 8px;text-align:center;border-bottom:1px solid #3b82f6;width:100px;">Actions</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
 	</main>
 
 	<!-- Edit Car Modal -->
