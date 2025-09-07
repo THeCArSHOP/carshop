@@ -1,4 +1,4 @@
-// Remove Firebase import - we'll use local API instead
+import { listCars, createLead } from './firebase.js';
 
 const carContent = document.getElementById('carContent');
 let currentCar = null;
@@ -19,12 +19,14 @@ async function loadCar() {
 	}
 
 	try {
-		const response = await fetch(`/api/cars/${carId}`);
-		if (!response.ok) {
+		const cars = await listCars();
+		currentCar = cars.find(car => car.id === carId);
+		
+		if (!currentCar) {
 			showError('Car not found');
 			return;
 		}
-		currentCar = await response.json();
+
 		renderCar();
 	} catch (error) {
 		console.error('Error loading car:', error);
@@ -174,27 +176,11 @@ function renderCar() {
 		};
 
 		try {
-			// Save to local database
-			const response = await fetch('/api/leads', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					carId: inquiryData.carId,
-					name: inquiryData.name,
-					email: inquiryData.email,
-					phone: inquiryData.phone,
-					message: inquiryData.message
-				})
-			});
-
-			if (response.ok) {
-				messageDiv.innerHTML = '<div style="color: green; margin-top: 15px;">Thank you! We will contact you soon about this vehicle.</div>';
-				form.reset();
-			} else {
-				throw new Error('Failed to save inquiry');
-			}
+			// Save to Firestore
+			await createLead(inquiryData);
+			
+			messageDiv.innerHTML = '<div style="color: green; margin-top: 15px;">Thank you! We will contact you soon about this vehicle.</div>';
+			form.reset();
 		} catch (error) {
 			console.error('Error submitting inquiry:', error);
 			messageDiv.innerHTML = '<div style="color: red; margin-top: 15px;">Sorry, there was an error submitting your inquiry. Please try again.</div>';

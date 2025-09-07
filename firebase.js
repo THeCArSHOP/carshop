@@ -50,6 +50,25 @@ export async function createLead(payload) {
     return { ok: true, id: ref.id };
 }
 
+// Admin: list leads
+export async function listLeads() {
+    if (!auth.currentUser) {
+        throw new Error('User must be authenticated to list leads');
+    }
+    const qy = query(leadsCol, orderBy('createdAt', 'desc'));
+    const snap = await getDocs(qy);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// Admin: delete lead
+export async function removeLead(id) {
+    if (!auth.currentUser) {
+        throw new Error('User must be authenticated to remove leads');
+    }
+    const ref = doc(db, 'leads', id);
+    await deleteDoc(ref);
+}
+
 // Admin: auth
 export async function signIn(email, password) {
     console.log('Attempting to sign in with:', email);
@@ -194,6 +213,8 @@ export async function deleteImage(imageUrl) {
 window.carshop = Object.assign(window.carshop || {}, {
     listCars,
     createLead,
+    listLeads,
+    removeLead,
     signIn,
     signOut,
     createCar,

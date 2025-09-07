@@ -1,4 +1,4 @@
-import { signIn, listCars, createCar, updateCar, removeCar } from './firebase.js';
+import { signIn, listCars, createCar, updateCar, removeCar, listLeads, removeLead } from './firebase.js';
 
 (function(){
 	const tableBody = document.querySelector('#carsTable tbody');
@@ -259,56 +259,65 @@ async function onDelete(e) {
     
     async function refreshInquiries() {
         try {
-            const response = await fetch('/api/admin/inquiries');
-            const result = await response.json();
-            renderInquiriesRows(result.data);
+            const inquiries = await listLeads();
+            renderInquiriesRows(inquiries);
         } catch (error) {
             console.error('Error loading inquiries:', error);
         }
     }
     
-    function renderInquiriesRows(inquiries) {
+    async function renderInquiriesRows(inquiries) {
         if (!inquiriesTableBody) return;
-        inquiriesTableBody.innerHTML = inquiries.map(inquiry => `
-            <tr data-id="${inquiry.id}">
-                <td style="vertical-align:middle;height:60px;">
-                    <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                        <span style="font-size:14px;color:#e7e9ee;">${new Date(inquiry.createdAt).toLocaleDateString()}</span>
-                        <span style="font-size:12px;color:#9aa3b2;">${new Date(inquiry.createdAt).toLocaleTimeString()}</span>
-                    </div>
-                </td>
-                <td style="vertical-align:middle;height:60px;">
-                    <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                        <strong style="font-size:16px;line-height:1.2;">${inquiry.name || 'N/A'}</strong>
-                    </div>
-                </td>
-                <td style="vertical-align:middle;height:60px;">
-                    <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                        <a href="mailto:${inquiry.email}" style="color:#3b82f6;text-decoration:none;font-size:14px;">${inquiry.email || 'N/A'}</a>
-                    </div>
-                </td>
-                <td style="vertical-align:middle;height:60px;">
-                    <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                        ${inquiry.phone ? `<a href="tel:${inquiry.phone}" style="color:#3b82f6;text-decoration:none;font-size:14px;">${inquiry.phone}</a>` : '<span style="color:#9aa3b2;">N/A</span>'}
-                    </div>
-                </td>
-                <td style="vertical-align:middle;height:60px;">
-                    <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                        ${inquiry.make && inquiry.model ? `<span style="font-size:14px;color:#e7e9ee;">${inquiry.make} ${inquiry.model} (${inquiry.year || 'N/A'})</span>` : '<span style="color:#9aa3b2;">General Inquiry</span>'}
-                    </div>
-                </td>
-                <td style="vertical-align:middle;height:60px;max-width:200px;">
-                    <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                        <span style="font-size:14px;color:#e7e9ee;word-wrap:break-word;">${inquiry.message || 'No message'}</span>
-                    </div>
-                </td>
-                <td style="vertical-align:middle;text-align:center;height:60px;" class="admin-actions">
-                    <div style="display:flex;align-items:center;justify-content:center;height:100%;gap:8px;">
-                        <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Delete</button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        
+        // Get all cars to match with inquiries
+        const cars = await listCars();
+        const carsMap = new Map(cars.map(car => [car.id, car]));
+        
+        inquiriesTableBody.innerHTML = inquiries.map(inquiry => {
+            const car = inquiry.carId ? carsMap.get(inquiry.carId) : null;
+            const createdAt = inquiry.createdAt?.toDate ? inquiry.createdAt.toDate() : new Date(inquiry.createdAt);
+            
+            return `
+                <tr data-id="${inquiry.id}">
+                    <td style="vertical-align:middle;height:60px;">
+                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
+                            <span style="font-size:14px;color:#e7e9ee;">${createdAt.toLocaleDateString()}</span>
+                            <span style="font-size:12px;color:#9aa3b2;">${createdAt.toLocaleTimeString()}</span>
+                        </div>
+                    </td>
+                    <td style="vertical-align:middle;height:60px;">
+                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
+                            <strong style="font-size:16px;line-height:1.2;">${inquiry.name || 'N/A'}</strong>
+                        </div>
+                    </td>
+                    <td style="vertical-align:middle;height:60px;">
+                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
+                            <a href="mailto:${inquiry.email}" style="color:#3b82f6;text-decoration:none;font-size:14px;">${inquiry.email || 'N/A'}</a>
+                        </div>
+                    </td>
+                    <td style="vertical-align:middle;height:60px;">
+                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
+                            ${inquiry.phone ? `<a href="tel:${inquiry.phone}" style="color:#3b82f6;text-decoration:none;font-size:14px;">${inquiry.phone}</a>` : '<span style="color:#9aa3b2;">N/A</span>'}
+                        </div>
+                    </td>
+                    <td style="vertical-align:middle;height:60px;">
+                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
+                            ${car ? `<span style="font-size:14px;color:#e7e9ee;">${car.year} ${car.make} ${car.model}</span>` : '<span style="color:#9aa3b2;">General Inquiry</span>'}
+                        </div>
+                    </td>
+                    <td style="vertical-align:middle;height:60px;max-width:200px;">
+                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
+                            <span style="font-size:14px;color:#e7e9ee;word-wrap:break-word;">${inquiry.message || 'No message'}</span>
+                        </div>
+                    </td>
+                    <td style="vertical-align:middle;text-align:center;height:60px;" class="admin-actions">
+                        <div style="display:flex;align-items:center;justify-content:center;height:100%;gap:8px;">
+                            <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
         
         // Add event listeners for delete buttons
         inquiriesTableBody.querySelectorAll('.delete-inquiry').forEach(btn => btn.addEventListener('click', onDeleteInquiry));
@@ -320,17 +329,9 @@ async function onDelete(e) {
         if (!confirm('Delete this inquiry?')) return;
         
         try {
-            const response = await fetch(`/api/admin/inquiries/${id}`, {
-                method: 'DELETE'
-            });
-            const result = await response.json();
-            
-            if (result.ok) {
-                await refreshInquiries();
-                alert('Inquiry deleted successfully!');
-            } else {
-                alert('Failed to delete inquiry');
-            }
+            await removeLead(id);
+            await refreshInquiries();
+            alert('Inquiry deleted successfully!');
         } catch (error) {
             console.error('Error deleting inquiry:', error);
             alert('Error deleting inquiry: ' + error.message);
