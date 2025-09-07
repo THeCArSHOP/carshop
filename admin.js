@@ -290,44 +290,32 @@ async function onDelete(e) {
         inquiriesTableBody.innerHTML = inquiries.map(inquiry => {
             const car = inquiry.carId ? carsMap.get(inquiry.carId) : null;
             const createdAt = inquiry.createdAt?.toDate ? inquiry.createdAt.toDate() : new Date(inquiry.createdAt);
+            const message = inquiry.message || 'No message provided';
+            const truncatedMessage = message.length > 50 ? message.substring(0, 50) + '...' : message;
             
             return `
-                <tr data-id="${inquiry.id}">
-                    <td style="vertical-align:middle;height:60px;">
-                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                            <span style="font-size:14px;color:#e7e9ee;">${createdAt.toLocaleDateString()}</span>
-                            <span style="font-size:12px;color:#9aa3b2;">${createdAt.toLocaleTimeString()}</span>
-                        </div>
+                <tr data-id="${inquiry.id}" style="height:40px;">
+                    <td style="vertical-align:middle;padding:8px;">
+                        <div style="font-size:12px;color:#e7e9ee;">${createdAt.toLocaleDateString()}</div>
+                        <div style="font-size:11px;color:#9aa3b2;">${createdAt.toLocaleTimeString()}</div>
                     </td>
-                    <td style="vertical-align:middle;height:60px;">
-                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                            <strong style="font-size:16px;line-height:1.2;">${inquiry.name || 'N/A'}</strong>
-                        </div>
+                    <td style="vertical-align:middle;padding:8px;">
+                        <strong style="font-size:14px;color:#e7e9ee;">${inquiry.name || 'N/A'}</strong>
                     </td>
-                    <td style="vertical-align:middle;height:60px;">
-                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                            <a href="mailto:${inquiry.email}" style="color:#3b82f6;text-decoration:none;font-size:14px;">${inquiry.email || 'N/A'}</a>
-                        </div>
+                    <td style="vertical-align:middle;padding:8px;">
+                        <a href="mailto:${inquiry.email}" style="color:#3b82f6;text-decoration:none;font-size:13px;">${inquiry.email || 'N/A'}</a>
                     </td>
-                    <td style="vertical-align:middle;height:60px;">
-                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                            ${inquiry.phone ? `<a href="tel:${inquiry.phone}" style="color:#3b82f6;text-decoration:none;font-size:14px;">${inquiry.phone}</a>` : '<span style="color:#9aa3b2;">N/A</span>'}
-                        </div>
+                    <td style="vertical-align:middle;padding:8px;">
+                        ${inquiry.phone ? `<a href="tel:${inquiry.phone}" style="color:#3b82f6;text-decoration:none;font-size:13px;">${inquiry.phone}</a>` : '<span style="color:#9aa3b2;font-size:13px;">N/A</span>'}
                     </td>
-                    <td style="vertical-align:middle;height:60px;">
-                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                            ${car ? `<span style="font-size:14px;color:#e7e9ee;">${car.year} ${car.make} ${car.model}</span>` : '<span style="color:#9aa3b2;">General Inquiry</span>'}
-                        </div>
+                    <td style="vertical-align:middle;padding:8px;">
+                        ${car ? `<span style="font-size:13px;color:#e7e9ee;">${car.year} ${car.make} ${car.model}</span>` : '<span style="color:#9aa3b2;font-size:13px;">General Inquiry</span>'}
                     </td>
-                    <td style="vertical-align:middle;height:60px;max-width:200px;">
-                        <div style="display:flex;flex-direction:column;justify-content:center;height:100%;">
-                            <span style="font-size:14px;color:#e7e9ee;word-wrap:break-word;">${inquiry.message || 'No message'}</span>
-                        </div>
+                    <td style="vertical-align:middle;padding:8px;max-width:200px;">
+                        <span style="font-size:13px;color:#e7e9ee;" title="${message}">${truncatedMessage}</span>
                     </td>
-                    <td style="vertical-align:middle;text-align:center;height:60px;" class="admin-actions">
-                        <div style="display:flex;align-items:center;justify-content:center;height:100%;gap:8px;">
-                            <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:6px 10px;border-radius:4px;cursor:pointer;font-size:12px;">Delete</button>
-                        </div>
+                    <td style="vertical-align:middle;text-align:center;padding:8px;">
+                        <button class="delete-inquiry" style="background:#dc2626;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;">Delete</button>
                     </td>
                 </tr>
             `;
@@ -349,6 +337,15 @@ async function onDelete(e) {
         } catch (error) {
             console.error('Error deleting inquiry:', error);
             alert('Error deleting inquiry: ' + error.message);
+        }
+    }
+
+    // Auto-refresh inquiries when admin panel loads
+    function autoRefreshInquiries() {
+        // Check if user is authenticated and admin panel is visible
+        const adminMain = document.getElementById('adminMain');
+        if (adminMain && adminMain.style.display !== 'none') {
+            refreshInquiries();
         }
     }
 
@@ -375,6 +372,9 @@ async function onDelete(e) {
         } else {
             console.log('Refresh button not found');
         }
+        
+        // Auto-refresh inquiries every 5 seconds
+        setInterval(autoRefreshInquiries, 5000);
     });
 })();
 
