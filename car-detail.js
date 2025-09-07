@@ -1,4 +1,4 @@
-import { listCars, createLead } from './firebase.js';
+// Remove Firebase import - we'll use local API instead
 
 const carContent = document.getElementById('carContent');
 let currentCar = null;
@@ -19,14 +19,12 @@ async function loadCar() {
 	}
 
 	try {
-		const cars = await listCars();
-		currentCar = cars.find(car => car.id === carId);
-		
-		if (!currentCar) {
+		const response = await fetch(`/api/cars/${carId}`);
+		if (!response.ok) {
 			showError('Car not found');
 			return;
 		}
-
+		currentCar = await response.json();
 		renderCar();
 	} catch (error) {
 		console.error('Error loading car:', error);
@@ -176,14 +174,27 @@ function renderCar() {
 		};
 
 		try {
-			// Save to Firebase
-			await createLead(inquiryData);
-			
-			// Send email notification
-			await sendEmailNotification(inquiryData);
-			
-			messageDiv.innerHTML = '<div style="color: green; margin-top: 15px;">Thank you! We will contact you soon about this vehicle.</div>';
-			form.reset();
+			// Save to local database
+			const response = await fetch('/api/leads', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					carId: inquiryData.carId,
+					name: inquiryData.name,
+					email: inquiryData.email,
+					phone: inquiryData.phone,
+					message: inquiryData.message
+				})
+			});
+
+			if (response.ok) {
+				messageDiv.innerHTML = '<div style="color: green; margin-top: 15px;">Thank you! We will contact you soon about this vehicle.</div>';
+				form.reset();
+			} else {
+				throw new Error('Failed to save inquiry');
+			}
 		} catch (error) {
 			console.error('Error submitting inquiry:', error);
 			messageDiv.innerHTML = '<div style="color: red; margin-top: 15px;">Sorry, there was an error submitting your inquiry. Please try again.</div>';
@@ -213,38 +224,7 @@ function changeImage(index) {
 // Make changeImage globally available
 window.changeImage = changeImage;
 
-// Email notification function
-async function sendEmailNotification(inquiryData) {
-	try {
-		// Initialize EmailJS
-		emailjs.init(window.EMAILJS_CONFIG.publicKey);
-		
-		// Email template parameters
-		const templateParams = {
-			to_email: window.getContactEmail(), // Email from config file
-			from_name: inquiryData.name,
-			from_email: inquiryData.email,
-			phone: inquiryData.phone || 'Not provided',
-			car_info: inquiryData.carInfo,
-			car_id: inquiryData.carId,
-			message: inquiryData.message || 'No message provided',
-			date: new Date().toLocaleString()
-		};
-		
-		// Send email
-		const result = await emailjs.send(
-			window.EMAILJS_CONFIG.serviceId,
-			window.EMAILJS_CONFIG.templateId,
-			templateParams
-		);
-		
-		console.log('Email sent successfully:', result);
-		return result;
-	} catch (error) {
-		console.error('Error sending email:', error);
-		// Don't throw error - we still want to save to Firebase even if email fails
-	}
-}
+// Email notification removed - inquiries are now saved to local database
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {

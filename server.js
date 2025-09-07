@@ -244,6 +244,32 @@ app.delete('/api/admin/images/:imageId', (req, res) => {
 	res.json({ ok: info.changes > 0 });
 });
 
+// Admin inquiries endpoints
+app.get('/api/admin/inquiries', (req, res) => {
+	const { page = '1', pageSize = '20' } = req.query;
+	const pageNum = Math.max(1, parseInt(page, 10) || 1);
+	const pageLen = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 20));
+	const offset = (pageNum - 1) * pageLen;
+
+	const countStmt = db.prepare('SELECT COUNT(*) as c FROM leads');
+	const total = countStmt.get().c;
+
+	const inquiries = db.prepare(`
+		SELECT l.*, c.make, c.model, c.year 
+		FROM leads l 
+		LEFT JOIN cars c ON l.carId = c.id 
+		ORDER BY l.createdAt DESC 
+		LIMIT @limit OFFSET @offset
+	`).all({ limit: pageLen, offset });
+
+	res.json({ data: inquiries, total, page: pageNum, pageSize: pageLen });
+});
+
+app.delete('/api/admin/inquiries/:id', (req, res) => {
+	const info = db.prepare('DELETE FROM leads WHERE id = ?').run(req.params.id);
+	res.json({ ok: info.changes > 0 });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 	console.log(`Car shop running at http://localhost:${PORT}`);
