@@ -279,6 +279,9 @@ async function onDelete(e) {
             }
         }
     }
+
+    // Make refreshInquiries globally accessible
+    window.refreshInquiries = refreshInquiries;
     
     async function renderInquiriesRows(inquiries) {
         if (!inquiriesTableBody) return;

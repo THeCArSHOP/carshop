@@ -10,10 +10,13 @@ image.png
 </head>
 <body>
 	<header>
-		<a href="index.html" class="logo">
-			<span class="logo-icon">🚗</span>
-			Car Shop Admin
-		</a>
+		<div style="display:flex;align-items:center;gap:10px">
+			<button id="openDrawer" class="hamburger" aria-label="Open menu"><span></span></button>
+			<a href="index.html" class="logo">
+				<span class="logo-icon">🚗</span>
+				Car Shop Admin
+			</a>
+		</div>
 		<nav>
 			<a href="index.html">Home</a>
 			<a href="inventory.html">Inventory</a>
@@ -21,6 +24,15 @@ image.png
 			<button id="logoutBtn" style="background:#dc2626;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;margin-left:10px;">Logout</button>
 		</nav>
 	</header>
+	<div id="backdrop" class="backdrop"></div>
+	<aside id="drawer" class="drawer" aria-label="Site menu">
+		<h4>Navigate</h4>
+		<a href="index.html">🏠 Home</a>
+		<a href="inventory.html">🚗 Inventory</a>
+		<a href="favorites.html">❤️ Favorites</a>
+		<a href="compare.html">⚖️ Compare</a>
+		<a href="admin.html">⚙️ Admin Panel</a>
+	</aside>
 
 	<!-- Simple client-side login gate -->
 	<div id="loginGate" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:2000;">
@@ -108,16 +120,16 @@ image.png
 		<h2>Customer Inquiries</h2>
 		<p style="color:#9aa3b2;margin:6px 0 10px">View and manage customer inquiries from your website.</p>
 		<button id="refreshInquiries" style="background:#3b82f6;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;margin-bottom:15px;">🔄 Refresh Inquiries</button>
-		<table id="inquiriesTable">
+		<table id="inquiriesTable" style="width:100%;border-collapse:collapse;">
 			<thead>
-				<tr>
-					<th>Date</th>
-					<th>Name</th>
-					<th>Email</th>
-					<th>Phone</th>
-					<th>Car</th>
-					<th>Message</th>
-					<th>Actions</th>
+				<tr style="background:#242938;">
+					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Date</th>
+					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Name</th>
+					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Email</th>
+					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Phone</th>
+					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Car</th>
+					<th style="padding:12px 8px;text-align:left;border-bottom:1px solid #3b82f6;">Message</th>
+					<th style="padding:12px 8px;text-align:center;border-bottom:1px solid #3b82f6;">Actions</th>
 				</tr>
 			</thead>
 			<tbody></tbody>
@@ -241,7 +253,16 @@ image.png
 			var pass = document.getElementById('adminPass');
 			var msg = document.getElementById('loginMsg');
 			var OK = localStorage.getItem('carshop_admin_authed') === 'true';
-			function showApp(){ if (gate) gate.style.display='none'; if (main) main.style.display=''; }
+			function showApp(){ 
+				if (gate) gate.style.display='none'; 
+				if (main) main.style.display=''; 
+				// Auto-load inquiries when admin panel is shown
+				setTimeout(() => {
+					if (window.refreshInquiries) {
+						window.refreshInquiries();
+					}
+				}, 1000);
+			}
 			// Don't auto-show app, always require fresh login
 			// if (OK) { showApp(); }
 			if (form) {
@@ -287,6 +308,23 @@ image.png
 					}
 				});
 			}
+
+			// Hamburger menu functionality
+			const drawer = document.getElementById('drawer');
+			const openBtn = document.getElementById('openDrawer');
+			const backdrop = document.getElementById('backdrop');
+			
+			function closeDrawer() { 
+				drawer.classList.remove('open'); 
+				backdrop.classList.remove('show'); 
+			}
+			function openDrawer() { 
+				drawer.classList.add('open'); 
+				backdrop.classList.add('show'); 
+			}
+			
+			if (openBtn) openBtn.addEventListener('click', openDrawer);
+			if (backdrop) backdrop.addEventListener('click', closeDrawer);
 		});
 	</script>
 	<script type="module" src="./admin.js"></script>
