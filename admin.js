@@ -258,8 +258,11 @@ async function onDelete(e) {
     const inquiriesTableBody = document.querySelector('#inquiriesTable tbody');
     
     async function refreshInquiries() {
+        console.log('Refreshing inquiries...');
         try {
+            console.log('Calling listLeads()...');
             const inquiries = await listLeads();
+            console.log('Inquiries loaded:', inquiries);
             renderInquiriesRows(inquiries);
         } catch (error) {
             console.error('Error loading inquiries:', error);
@@ -349,16 +352,29 @@ async function onDelete(e) {
         }
     }
 
-    // Add refresh button event listener
-    const refreshInquiriesBtn = document.getElementById('refreshInquiries');
-    if (refreshInquiriesBtn) {
-        refreshInquiriesBtn.addEventListener('click', refreshInquiries);
-    }
-
     // initial load after admin.html auth gate
     document.addEventListener('DOMContentLoaded', () => {
         refresh();
         refreshInquiries();
+        
+        // Add refresh button event listener after DOM is ready
+        const refreshInquiriesBtn = document.getElementById('refreshInquiries');
+        if (refreshInquiriesBtn) {
+            refreshInquiriesBtn.addEventListener('click', async () => {
+                console.log('Refresh button clicked');
+                refreshInquiriesBtn.textContent = '🔄 Loading...';
+                refreshInquiriesBtn.disabled = true;
+                
+                try {
+                    await refreshInquiries();
+                } finally {
+                    refreshInquiriesBtn.textContent = '🔄 Refresh Inquiries';
+                    refreshInquiriesBtn.disabled = false;
+                }
+            });
+        } else {
+            console.log('Refresh button not found');
+        }
     });
 })();
 

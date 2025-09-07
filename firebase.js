@@ -38,6 +38,7 @@ export async function listCars() {
 
 // Public: create lead
 export async function createLead(payload) {
+    console.log('Creating lead with payload:', payload);
     const docData = {
         carId: payload.carId || null,
         name: payload.name,
@@ -46,18 +47,33 @@ export async function createLead(payload) {
         message: payload.message || null,
         createdAt: serverTimestamp()
     };
+    console.log('Saving to Firestore leads collection:', docData);
     const ref = await addDoc(leadsCol, docData);
+    console.log('Lead saved successfully with ID:', ref.id);
     return { ok: true, id: ref.id };
 }
 
 // Admin: list leads
 export async function listLeads() {
+    console.log('listLeads called, current user:', auth.currentUser);
+    
     if (!auth.currentUser) {
+        console.log('No authenticated user found');
         throw new Error('User must be authenticated to list leads');
     }
-    const qy = query(leadsCol, orderBy('createdAt', 'desc'));
-    const snap = await getDocs(qy);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    console.log('User is authenticated, fetching leads...');
+    try {
+        const qy = query(leadsCol, orderBy('createdAt', 'desc'));
+        const snap = await getDocs(qy);
+        console.log('Leads fetched from Firestore:', snap.docs.length, 'documents');
+        const leads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        console.log('Leads data:', leads);
+        return leads;
+    } catch (error) {
+        console.error('Error fetching leads:', error);
+        throw error;
+    }
 }
 
 // Admin: delete lead
