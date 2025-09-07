@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UID Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .code { background-color: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>User UID Check</h1>
+    <div id="results"></div>
+    <button onclick="checkUID()">Check User UID</button>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        window.checkUID = async function() {
+            try {
+                log('Signing in to check UID...', 'info');
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                
+                const user = userCredential.user;
+                log(`✓ Authentication successful!`, 'success');
+                log(`Email: ${user.email}`, 'info');
+                log(`UID: ${user.uid}`, 'info');
+                log(`Display Name: ${user.displayName || 'Not set'}`, 'info');
+                
+                // Check if UID matches expected admin UID
+                const expectedUID = "6sd9M6IX0HbSbMpH9vNJ2kdnIkQ2";
+                if (user.uid === expectedUID) {
+                    log(`✓ UID matches expected admin UID!`, 'success');
+                } else {
+                    log(`✗ UID does NOT match expected admin UID!`, 'error');
+                    log(`Expected: ${expectedUID}`, 'error');
+                    log(`Actual: ${user.uid}`, 'error');
+                    log('This means the Firestore rules need to be updated with the correct UID', 'warning');
+                }
+                
+                // Show current rules
+                log('Current Firestore rules should allow write for UID:', 'info');
+                log(`"${user.uid}"`, 'code');
+                
+            } catch (error) {
+                log(`Authentication failed: ${error.message}`, 'error');
+            }
+        };
+
+        // Auto-run on load
+        log('UID Check Tool loaded', 'info');
+    </script>
+</body>
+</html>

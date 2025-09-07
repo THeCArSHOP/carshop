@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeout Write Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Timeout Write Test</h1>
+    <div id="results"></div>
+    <button onclick="testWithTimeout()">Test Write with 10s Timeout</button>
+    <button onclick="testSimpleWrite()">Test Simple Write (no auth required)</button>
+    <button onclick="testLeadsCollection()">Test Leads Collection</button>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function timeoutPromise(promise, timeoutMs) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
+                )
+            ]);
+        }
+
+        window.testWithTimeout = async function() {
+            try {
+                log('Testing write with 10 second timeout...', 'info');
+                
+                // Authenticate
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                log(`✓ Authenticated as: ${userCredential.user.email}`, 'success');
+                
+                // Prepare data
+                const carData = {
+                    make: 'Timeout Test',
+                    model: 'Car',
+                    year: 2024,
+                    price: 1000,
+                    mileage: 0,
+                    createdAt: serverTimestamp()
+                };
+                
+                log('Attempting write with timeout...', 'info');
+                
+                // Try write with timeout
+                const writePromise = addDoc(collection(db, 'cars'), carData);
+                const result = await timeoutPromise(writePromise, 10000);
+                
+                log(`✓ Write successful! Document ID: ${result.id}`, 'success');
+                
+            } catch (error) {
+                if (error.message.includes('timed out')) {
+                    log(`✗ Write operation timed out after 10 seconds`, 'error');
+                } else {
+                    log(`✗ Write failed: ${error.message}`, 'error');
+                }
+                log(`Error code: ${error.code}`, 'error');
+            }
+        };
+
+        window.testSimpleWrite = async function() {
+            try {
+                log('Testing simple write (no auth required)...', 'info');
+                
+                const testData = {
+                    message: 'Simple test',
+                    timestamp: new Date().toISOString()
+                };
+                
+                log('Attempting write to test collection...', 'info');
+                const result = await timeoutPromise(addDoc(collection(db, 'test'), testData), 10000);
+                log(`✓ Simple write successful! Document ID: ${result.id}`, 'success');
+                
+            } catch (error) {
+                if (error.message.includes('timed out')) {
+                    log(`✗ Simple write timed out after 10 seconds`, 'error');
+                } else {
+                    log(`✗ Simple write failed: ${error.message}`, 'error');
+                }
+            }
+        };
+
+        window.testLeadsCollection = async function() {
+            try {
+                log('Testing leads collection write...', 'info');
+                
+                const leadData = {
+                    name: 'Test Lead',
+                    email: 'test@example.com',
+                    message: 'Test message',
+                    createdAt: serverTimestamp()
+                };
+                
+                log('Attempting write to leads collection...', 'info');
+                const result = await timeoutPromise(addDoc(collection(db, 'leads'), leadData), 10000);
+                log(`✓ Leads write successful! Document ID: ${result.id}`, 'success');
+                
+            } catch (error) {
+                if (error.message.includes('timed out')) {
+                    log(`✗ Leads write timed out after 10 seconds`, 'error');
+                } else {
+                    log(`✗ Leads write failed: ${error.message}`, 'error');
+                }
+            }
+        };
+
+        log('Timeout Write Test loaded', 'info');
+    </script>
+</body>
+</html>

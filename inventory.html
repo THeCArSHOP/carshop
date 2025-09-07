@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Inventory - Car Shop</title>
+	<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+	<header>
+		<div style="display:flex;align-items:center;gap:10px">
+			<button id="openDrawer" class="hamburger" aria-label="Open menu"><span></span></button>
+			<a href="index.html" class="logo">
+				<span class="logo-icon">🚗</span>
+				Car Shop
+			</a>
+		</div>
+		<nav>
+			<a href="index.html">Home</a>
+			<a href="favorites.html">Favorites</a>
+			<a href="compare.html">Compare</a>
+			<a href="admin.html">Admin</a>
+		</nav>
+	</header>
+	<div id="backdrop" class="backdrop"></div>
+	<aside id="drawer" class="drawer" aria-label="Site menu">
+		<h4>Navigate</h4>
+		<a href="index.html">Home</a>
+		<a href="inventory.html">Inventory</a>
+		<a href="favorites.html">Favorites</a>
+		<a href="compare.html">Compare</a>
+		<a href="admin.html">Admin</a>
+	</aside>
+
+	<section class="filters">
+		<input id="q" placeholder="Search make, model, color..." />
+		<select id="make"></select>
+		<select id="model"></select>
+		<select id="year"></select>
+		<select id="sort">
+			<option value="createdAt:desc">Newest</option>
+			<option value="price:asc">Price ↑</option>
+			<option value="price:desc">Price ↓</option>
+			<option value="year:desc">Year ↓</option>
+			<option value="mileage:asc">Mileage ↑</option>
+		</select>
+		<button id="apply">Apply</button>
+	</section>
+
+	<section id="grid" class="grid"></section>
+	<div id="pager" class="pager"></div>
+
+	<div id="modal" class="modal hidden">
+		<div class="modal-content">
+			<button id="closeModal" class="close">×</button>
+			<div id="modalBody"></div>
+		</div>
+	</div>
+
+	<footer>
+		<div class="footer-content">
+			<a href="index.html" class="footer-brand">
+				<span class="footer-icon">🚗</span>
+				Car Shop
+			</a>
+			<div class="footer-links">
+				<a href="#" id="contactEmail">📧 Contact</a>
+				<a href="#" id="contactPhone">📞 Call</a>
+				<a href="#" id="contactInstagram" target="_blank" rel="noreferrer">📷 Instagram</a>
+			</div>
+		</div>
+		<div class="footer-info">
+			© <span id="footerYear"></span> Car Shop - Premium Automotive Solutions
+		</div>
+	</footer>
+	
+	<!-- Configuration File -->
+	<script src="config.js"></script>
+	
+	<script>
+		var fy = document.getElementById('footerYear');
+		if (fy) fy.textContent = new Date().getFullYear();
+		
+		// Update contact links from config
+		document.addEventListener('DOMContentLoaded', function() {
+			const contactEmail = document.getElementById('contactEmail');
+			const contactPhone = document.getElementById('contactPhone');
+			const contactInstagram = document.getElementById('contactInstagram');
+			
+			if (contactEmail) contactEmail.href = 'mailto:' + window.getContactEmail();
+			if (contactPhone) contactPhone.href = 'tel:' + window.getPhoneNumber();
+			if (contactInstagram) contactInstagram.href = window.getInstagramUrl();
+		});
+		
+		window.FIREBASE_CONFIG = {
+			apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+			authDomain: "car--shop.firebaseapp.com",
+			projectId: "car--shop",
+			storageBucket: "car--shop.firebasestorage.app",
+			messagingSenderId: "385403019174",
+			appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+			measurementId: "G-B9KZCXJVK9"
+		};
+
+		(function(){
+			var drawer = document.getElementById('drawer');
+			var openBtn = document.getElementById('openDrawer');
+			var backdrop = document.getElementById('backdrop');
+			function close(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); }
+			function open(){ drawer.classList.add('open'); backdrop.classList.add('show'); }
+			if (openBtn) openBtn.addEventListener('click', open);
+			if (backdrop) backdrop.addEventListener('click', close);
+		})();
+	</script>
+	<script type="module" src="app.js"></script>
+</body>
+</html>

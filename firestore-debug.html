@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .code { background-color: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Firestore Debug Tool</h1>
+    <div id="results"></div>
+    <button onclick="runFullDiagnostic()">Run Full Diagnostic</button>
+    <button onclick="testAuth()">Test Authentication</button>
+    <button onclick="testWriteWithAuth()">Test Write (with Auth)</button>
+    <button onclick="testWriteWithoutAuth()">Test Write (without Auth)</button>
+    <button onclick="testRead()">Test Read</button>
+    <button onclick="checkRules()">Check Security Rules</button>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, serverTimestamp, doc, setDoc } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `debug-result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function logCode(code, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `debug-result ${type}`;
+            div.innerHTML = `<div>${new Date().toLocaleTimeString()}: Code:</div><div class="code">${code}</div>`;
+            results.appendChild(div);
+        }
+
+        window.runFullDiagnostic = async function() {
+            log('=== Starting Full Firestore Diagnostic ===', 'info');
+            
+            // Test 1: Connection
+            log('1. Testing Firestore connection...', 'info');
+            log(`Project ID: ${config.projectId}`, 'info');
+            log(`Database: ${db.app.name}`, 'info');
+            
+            // Test 2: Authentication
+            log('2. Testing authentication...', 'info');
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                log(`✓ Authentication successful! User: ${userCredential.user.email}`, 'success');
+                log(`User UID: ${userCredential.user.uid}`, 'info');
+            } catch (error) {
+                log(`✗ Authentication failed: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Test 3: Read operation
+            log('3. Testing read operation...', 'info');
+            try {
+                const querySnapshot = await getDocs(collection(db, 'cars'));
+                log(`✓ Read successful! Found ${querySnapshot.size} documents`, 'success');
+            } catch (error) {
+                log(`✗ Read failed: ${error.message}`, 'error');
+            }
+            
+            // Test 4: Write operation
+            log('4. Testing write operation...', 'info');
+            try {
+                const testData = {
+                    debug: true,
+                    message: 'Debug test write',
+                    timestamp: serverTimestamp(),
+                    user: auth.currentUser.uid
+                };
+                const docRef = await addDoc(collection(db, 'cars'), testData);
+                log(`✓ Write successful! Document ID: ${docRef.id}`, 'success');
+            } catch (error) {
+                log(`✗ Write failed: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`, 'error');
+                log(`Full error: ${JSON.stringify(error)}`, 'error');
+            }
+            
+            log('=== Diagnostic Complete ===', 'info');
+        };
+
+        window.testAuth = async function() {
+            try {
+                log('Testing authentication...', 'info');
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                log(`Authentication successful! User: ${userCredential.user.email}`, 'success');
+                log(`User UID: ${userCredential.user.uid}`, 'info');
+            } catch (error) {
+                log(`Authentication failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.testWriteWithAuth = async function() {
+            try {
+                log('Testing write with authentication...', 'info');
+                
+                if (!auth.currentUser) {
+                    log('Not authenticated, signing in first...', 'info');
+                    await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                }
+                
+                const testData = {
+                    debug: true,
+                    message: 'Authenticated write test',
+                    timestamp: serverTimestamp(),
+                    user: auth.currentUser.uid
+                };
+                
+                const docRef = await addDoc(collection(db, 'cars'), testData);
+                log(`Write successful! Document ID: ${docRef.id}`, 'success');
+            } catch (error) {
+                log(`Write failed: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`, 'error');
+            }
+        };
+
+        window.testWriteWithoutAuth = async function() {
+            try {
+                log('Testing write without authentication...', 'info');
+                
+                // Sign out first
+                if (auth.currentUser) {
+                    await auth.signOut();
+                    log('Signed out for test', 'info');
+                }
+                
+                const testData = {
+                    debug: true,
+                    message: 'Unauthenticated write test',
+                    timestamp: serverTimestamp()
+                };
+                
+                const docRef = await addDoc(collection(db, 'cars'), testData);
+                log(`Write successful! Document ID: ${docRef.id}`, 'success');
+            } catch (error) {
+                log(`Write failed (expected): ${error.message}`, 'warning');
+                log(`Error code: ${error.code}`, 'warning');
+            }
+        };
+
+        window.testRead = async function() {
+            try {
+                log('Testing read operation...', 'info');
+                const querySnapshot = await getDocs(collection(db, 'cars'));
+                log(`Read successful! Found ${querySnapshot.size} documents`, 'success');
+                querySnapshot.forEach((doc) => {
+                    log(`Document ${doc.id}: ${JSON.stringify(doc.data())}`, 'info');
+                });
+            } catch (error) {
+                log(`Read failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.checkRules = function() {
+            log('Current Firestore Security Rules should be:', 'info');
+            const rules = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /cars/{carId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == "6sd9M6IX0HbSbMpH9vNJ2kdnIkQ2";
+    }
+    match /leads/{leadId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null && request.auth.uid == "6sd9M6IX0HbSbMpH9vNJ2kdnIkQ2";
+    }
+  }
+}`;
+            logCode(rules, 'info');
+            log('Make sure these rules are deployed in Firebase Console > Firestore > Rules', 'warning');
+        };
+
+        // Auto-run connection test on load
+        log('Firestore Debug Tool loaded', 'info');
+        log(`Project: ${config.projectId}`, 'info');
+    </script>
+</body>
+</html>

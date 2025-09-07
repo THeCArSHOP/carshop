@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #0f1115; color: #e7e9ee; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; background: #171a21; border-radius: 8px; }
+        button { padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; margin: 5px; }
+        button:hover { background: #2563eb; }
+        input[type="file"] { margin: 10px 0; padding: 10px; background: #11151d; color: #e7e9ee; border: 1px solid #242938; border-radius: 6px; }
+        .result { margin: 10px 0; padding: 10px; background: #1f2937; border-radius: 6px; }
+        .success { background: #065f46; }
+        .error { background: #7f1d1d; }
+        .info { background: #1e40af; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Upload Debug Tool</h1>
+        
+        <div class="test-section">
+            <h3>Step 1: Authentication Test</h3>
+            <button onclick="testAuth()">Test Login</button>
+            <div id="authResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 2: Firebase Storage Test</h3>
+            <input type="file" id="testFile" accept="image/*" />
+            <button onclick="testImageUpload()">Upload Test Image</button>
+            <div id="uploadResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Step 3: Create Car with Image</h3>
+            <input type="file" id="carImage" accept="image/*" />
+            <button onclick="testCreateCar()">Create Test Car</button>
+            <div id="carResult" class="result"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js';
+
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app, 'cars');
+        const storage = getStorage(app);
+
+        let currentUser = null;
+
+        function addResult(id, message, type = 'info') {
+            const resultDiv = document.getElementById(id);
+            resultDiv.innerHTML = message;
+            resultDiv.className = `result ${type}`;
+        }
+
+        window.testAuth = async function() {
+            try {
+                addResult('authResult', 'Testing authentication...', 'info');
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                currentUser = userCredential.user;
+                addResult('authResult', `✅ Login successful! UID: ${currentUser.uid}`, 'success');
+            } catch (error) {
+                addResult('authResult', `❌ Login failed: ${error.message}`, 'error');
+            }
+        }
+
+        window.testImageUpload = async function() {
+            if (!currentUser) {
+                addResult('uploadResult', '❌ Please login first!', 'error');
+                return;
+            }
+
+            const fileInput = document.getElementById('testFile');
+            if (!fileInput.files[0]) {
+                addResult('uploadResult', '❌ Please select a file first!', 'error');
+                return;
+            }
+
+            try {
+                addResult('uploadResult', 'Uploading image...', 'info');
+                const file = fileInput.files[0];
+                const path = `test/${Date.now()}_${file.name}`;
+                const ref = storageRef(storage, path);
+                
+                await uploadBytes(ref, file);
+                const url = await getDownloadURL(ref);
+                
+                addResult('uploadResult', `✅ Upload successful!<br>URL: <a href="${url}" target="_blank">${url}</a>`, 'success');
+            } catch (error) {
+                addResult('uploadResult', `❌ Upload failed: ${error.message}<br>Code: ${error.code}`, 'error');
+            }
+        }
+
+        window.testCreateCar = async function() {
+            if (!currentUser) {
+                addResult('carResult', '❌ Please login first!', 'error');
+                return;
+            }
+
+            const fileInput = document.getElementById('carImage');
+            if (!fileInput.files[0]) {
+                addResult('carResult', '❌ Please select a file first!', 'error');
+                return;
+            }
+
+            try {
+                addResult('carResult', 'Creating car with image...', 'info');
+                
+                // Upload image first
+                const file = fileInput.files[0];
+                const path = `thumbnails/${Date.now()}_${file.name}`;
+                const ref = storageRef(storage, path);
+                await uploadBytes(ref, file);
+                const imageUrl = await getDownloadURL(ref);
+                
+                // Create car
+                const carData = {
+                    make: 'Test',
+                    model: 'Car',
+                    year: 2024,
+                    price: 10000,
+                    mileage: 0,
+                    thumbnail: imageUrl,
+                    images: [imageUrl],
+                    createdAt: serverTimestamp()
+                };
+                
+                const carRef = await addDoc(collection(db, 'cars'), carData);
+                addResult('carResult', `✅ Car created successfully!<br>ID: ${carRef.id}<br>Image: <a href="${imageUrl}" target="_blank">View Image</a>`, 'success');
+            } catch (error) {
+                addResult('carResult', `❌ Failed: ${error.message}<br>Code: ${error.code}`, 'error');
+            }
+        }
+
+        // Auto-login on page load
+        testAuth();
+    </script>
+</body>
+</html>

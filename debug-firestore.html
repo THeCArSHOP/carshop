@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Firestore</title>
+</head>
+<body>
+    <h1>Firestore Debug</h1>
+    <button onclick="debugFirestore()">Debug Firestore</button>
+    <div id="result"></div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp, connectFirestoreEmulator } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+        
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+        
+        const app = initializeApp(config);
+        
+        window.debugFirestore = async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>Debugging Firestore...</h3>';
+            
+            try {
+                // Test 1: Default database
+                console.log('Testing default database...');
+                const dbDefault = getFirestore(app);
+                resultDiv.innerHTML += '<p>✅ Default database initialized</p>';
+                
+                // Test 2: Named database
+                console.log('Testing named database...');
+                const dbNamed = getFirestore(app, 'cars-database');
+                resultDiv.innerHTML += '<p>✅ Named database initialized</p>';
+                
+                // Test 3: Try to write to default
+                console.log('Testing write to default database...');
+                try {
+                    const testData = {
+                        name: 'Test Default',
+                        timestamp: serverTimestamp()
+                    };
+                    const docRef = await addDoc(collection(dbDefault, 'test'), testData);
+                    resultDiv.innerHTML += `<p>✅ Write to default DB successful: ${docRef.id}</p>`;
+                } catch (error) {
+                    resultDiv.innerHTML += `<p>❌ Write to default DB failed: ${error.message}</p>`;
+                }
+                
+                // Test 4: Try to write to named
+                console.log('Testing write to named database...');
+                try {
+                    const testData = {
+                        name: 'Test Named',
+                        timestamp: serverTimestamp()
+                    };
+                    const docRef = await addDoc(collection(dbNamed, 'test'), testData);
+                    resultDiv.innerHTML += `<p>✅ Write to named DB successful: ${docRef.id}</p>`;
+                } catch (error) {
+                    resultDiv.innerHTML += `<p>❌ Write to named DB failed: ${error.message}</p>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML += `<p>❌ Debug failed: ${error.message}</p>`;
+                console.error('Debug error:', error);
+            }
+        };
+    </script>
+</body>
+</html>

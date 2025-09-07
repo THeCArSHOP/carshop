@@ -1,0 +1,277 @@
+
+image.png
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Admin - Car Shop</title>
+	<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+	<header>
+		<a href="index.html" class="logo">
+			<span class="logo-icon">🚗</span>
+			Car Shop Admin
+		</a>
+		<nav>
+			<a href="index.html">Home</a>
+			<a href="inventory.html">Inventory</a>
+			<a href="compare.html">Compare</a>
+			<button id="logoutBtn" style="background:#dc2626;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;margin-left:10px;">Logout</button>
+		</nav>
+	</header>
+
+	<!-- Simple client-side login gate -->
+	<div id="loginGate" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:2000;">
+		<div style="width:min(420px,92vw);background:#171a21;border:1px solid #242938;border-radius:12px;padding:18px;">
+			<h2 style="margin:0 0 10px">Admin Login</h2>
+			<p style="color:#9aa3b2;margin:0 0 12px">Enter credentials to manage cars.</p>
+			<form id="loginForm" style="display:grid;gap:8px">
+				<input id="adminUser" type="email" placeholder="Email" style="padding:10px 12px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:8px" />
+				<input id="adminPass" type="password" placeholder="Password" style="padding:10px 12px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:8px" />
+				<button type="submit" style="padding:10px 12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer">Login</button>
+				<a href="index.html" style="padding:10px 12px;background:#6b7280;color:#fff;border:none;border-radius:8px;cursor:pointer;text-align:center;text-decoration:none;display:block;">🏠 Home</a>
+				<div id="loginMsg" style="color:#ef4444"></div>
+			</form>
+		</div>
+	</div>
+
+	<main id="adminMain" class="container" style="display:none">
+		<h2>Add Car</h2>
+		<form id="createForm" class="admin-form">
+			<div class="form-section">
+				<h3>Basic Information</h3>
+				<input name="make" placeholder="Make" required />
+				<input name="model" placeholder="Model" required />
+				<input name="year" type="number" placeholder="Year" required />
+				<input name="price" type="number" placeholder="Price" required />
+				<input name="mileage" type="number" placeholder="Mileage" required />
+			</div>
+			
+			<div class="form-section">
+				<h3>Vehicle Details</h3>
+				<input name="body" placeholder="Body Style (e.g., Sedan, SUV, Coupe)" />
+				<input name="color" placeholder="Color" />
+				<input name="vin" placeholder="VIN Number" />
+				<input name="engine" placeholder="Engine (e.g., 2.0L 4-Cylinder)" />
+				<input name="transmission" placeholder="Transmission (e.g., Automatic, Manual)" />
+				<input name="fuelType" placeholder="Fuel Type (e.g., Gasoline, Hybrid, Electric)" />
+			</div>
+			
+			<div class="form-section">
+				<h3>Description</h3>
+				<textarea name="description" placeholder="Detailed description of the vehicle..." rows="4"></textarea>
+			</div>
+			
+							<div class="form-section">
+					<h3>Images (Max 5 images per car)</h3>
+					<div class="image-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+						<div>
+							<label style="display:block;color:#9aa3b2;margin-bottom:5px;font-size:14px;">Thumbnail (Main Image):</label>
+							<input name="thumbnail" placeholder="https://raw.githubusercontent.com/charbelrzk/charbelrzk.github.io/main/photos/2024.jpg" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+						</div>
+						<div>
+							<label style="display:block;color:#9aa3b2;margin-bottom:5px;font-size:14px;">Gallery Images:</label>
+							<input name="image1" placeholder="Image 1 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+							<input name="image2" placeholder="Image 2 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+							<input name="image3" placeholder="Image 3 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+							<input name="image4" placeholder="Image 4 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+							<input name="image5" placeholder="Image 5 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						</div>
+					</div>
+				</div>
+			
+			<div class="form-section">
+				<h3>Features</h3>
+				<label><input type="checkbox" name="featured" /> Featured Vehicle</label>
+			</div>
+			
+			<button type="submit">Create Car</button>
+		</form>
+
+		<h2>Cars</h2>
+		<p style="color:#9aa3b2;margin:6px 0 10px">Select up to 3 featured cars to highlight on the home page.</p>
+		<table id="carsTable">
+			<thead>
+				<tr>
+					<th>Info</th>
+					<th>Price</th>
+					<th>Mileage</th>
+					<th>Featured</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</main>
+
+	<!-- Edit Car Modal -->
+	<div id="editModal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);z-index:3000;">
+		<div style="width:min(1000px,98vw);max-height:95vh;background:#171a21;border:1px solid #242938;border-radius:12px;padding:25px;overflow-y:auto;">
+			<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+				<h2 style="margin:0;color:#e7e9ee;">Edit Car</h2>
+				<button id="closeEditModal" style="background:#dc2626;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">✕ Close</button>
+			</div>
+			
+			<form id="editForm" class="admin-form editModal" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+				<input type="hidden" id="editCarId" />
+				
+				<div class="form-section">
+					<h3 style="color:#e7e9ee;margin-bottom:15px;padding-bottom:8px;border-bottom:1px solid #242938;">Basic Information</h3>
+					<div style="display:grid;gap:12px;">
+						<input id="editMake" name="make" placeholder="Make" required style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editModel" name="model" placeholder="Model" required style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editYear" name="year" type="number" placeholder="Year" required style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editPrice" name="price" type="number" placeholder="Price" required style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editMileage" name="mileage" type="number" placeholder="Mileage" required style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+					</div>
+				</div>
+				
+				<div class="form-section">
+					<h3 style="color:#e7e9ee;margin-bottom:15px;padding-bottom:8px;border-bottom:1px solid #242938;">Vehicle Details</h3>
+					<div style="display:grid;gap:12px;">
+						<input id="editBody" name="body" placeholder="Body Style (e.g., Sedan, SUV, Coupe)" style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editColor" name="color" placeholder="Color" style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editVin" name="vin" placeholder="VIN Number" style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editEngine" name="engine" placeholder="Engine (e.g., 2.0L 4-Cylinder)" style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editTransmission" name="transmission" placeholder="Transmission (e.g., Automatic, Manual)" style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						<input id="editFuelType" name="fuelType" placeholder="Fuel Type (e.g., Gasoline, Hybrid, Electric)" style="padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+					</div>
+				</div>
+				
+				<div class="form-section" style="grid-column:1/-1;">
+					<h3 style="color:#e7e9ee;margin-bottom:15px;padding-bottom:8px;border-bottom:1px solid #242938;">Description</h3>
+					<textarea id="editDescription" name="description" placeholder="Detailed description of the vehicle..." rows="4" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;resize:vertical;"></textarea>
+				</div>
+				
+				<div class="form-section" style="grid-column:1/-1;">
+					<h3 style="color:#e7e9ee;margin-bottom:15px;padding-bottom:8px;border-bottom:1px solid #242938;">Images (Max 5 images per car)</h3>
+					<div class="image-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+						<div>
+							<label style="display:block;color:#9aa3b2;margin-bottom:5px;font-size:14px;">Thumbnail (Main Image):</label>
+							<input id="editThumbnail" name="thumbnail" placeholder="https://raw.githubusercontent.com/charbelrzk/charbelrzk.github.io/main/photos/2024.jpg" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+						</div>
+						<div>
+							<label style="display:block;color:#9aa3b2;margin-bottom:5px;font-size:14px;">Gallery Images:</label>
+							<input id="editImage1" name="image1" placeholder="Image 1 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+							<input id="editImage2" name="image2" placeholder="Image 2 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+							<input id="editImage3" name="image3" placeholder="Image 3 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+							<input id="editImage4" name="image4" placeholder="Image 4 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;margin-bottom:8px;" />
+							<input id="editImage5" name="image5" placeholder="Image 5 URL" style="width:100%;padding:10px;background:#11151d;color:#e7e9ee;border:1px solid #242938;border-radius:6px;" />
+						</div>
+					</div>
+				</div>
+				
+				<div class="form-section" style="grid-column:1/-1;">
+					<h3 style="color:#e7e9ee;margin-bottom:15px;padding-bottom:8px;border-bottom:1px solid #242938;">Features</h3>
+					<label style="display:flex;align-items:center;gap:8px;color:#e7e9ee;">
+						<input id="editFeatured" type="checkbox" name="featured" style="transform:scale(1.2);" />
+						<span>Featured Vehicle (max 3)</span>
+					</label>
+				</div>
+				
+				<div style="grid-column:1/-1;display:flex;gap:15px;margin-top:25px;padding-top:20px;border-top:1px solid #242938;">
+					<button type="submit" style="flex:1;padding:15px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:16px;font-weight:600;">Update Car</button>
+					<button type="button" id="cancelEdit" style="flex:1;padding:15px;background:#6b7280;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:16px;font-weight:600;">Cancel</button>
+				</div>
+			</form>
+		</div>
+	</main>
+
+	<footer>
+		<div class="footer-content">
+			<a href="index.html" class="footer-brand">
+				<span class="footer-icon">🚗</span>
+				Car Shop Admin
+			</a>
+			<div class="footer-links">
+				<a href="#" id="contactEmail">📧 Contact</a>
+				<a href="#" id="contactPhone">📞 Call</a>
+				<a href="#" id="contactInstagram" target="_blank" rel="noreferrer">📷 Instagram</a>
+			</div>
+		</div>
+		<div class="footer-info">
+			© <span id="footerYear"></span> Car Shop - Premium Automotive Solutions
+		</div>
+	</footer>
+
+	<!-- Configuration File -->
+	<script src="config.js"></script>
+
+	<script type="module">
+		import { signIn, signOut } from './firebase.js';
+		
+		// Wait for DOM to be ready
+		document.addEventListener('DOMContentLoaded', function() {
+			// Set footer year
+			var fy = document.getElementById('footerYear');
+			if (fy) fy.textContent = new Date().getFullYear();
+			
+			// Update contact links from config
+			const contactEmail = document.getElementById('contactEmail');
+			const contactPhone = document.getElementById('contactPhone');
+			const contactInstagram = document.getElementById('contactInstagram');
+			
+			if (contactEmail) contactEmail.href = 'mailto:' + window.getContactEmail();
+			if (contactPhone) contactPhone.href = 'tel:' + window.getPhoneNumber();
+			if (contactInstagram) contactInstagram.href = window.getInstagramUrl();
+			var gate = document.getElementById('loginGate');
+			var main = document.getElementById('adminMain');
+			var form = document.getElementById('loginForm');
+			var user = document.getElementById('adminUser');
+			var pass = document.getElementById('adminPass');
+			var msg = document.getElementById('loginMsg');
+			var OK = localStorage.getItem('carshop_admin_authed') === 'true';
+			function showApp(){ if (gate) gate.style.display='none'; if (main) main.style.display=''; }
+			// Don't auto-show app, always require fresh login
+			// if (OK) { showApp(); }
+			if (form) {
+				form.addEventListener('submit', async function(e){
+					e.preventDefault();
+					msg.textContent = '';
+					try {
+					const userCredential = await signIn(user.value, pass.value);
+					console.log('Login successful:', userCredential);
+					if (userCredential && userCredential.uid) {
+						localStorage.setItem('carshop_admin_authed','true');
+						showApp();
+					} else {
+						msg.textContent = 'Login failed: Invalid response from server';
+					}
+				} catch(err) {
+					console.error('Login error:', err);
+					if (err.code === 'auth/user-not-found') {
+						msg.textContent = 'User not found. Check email.';
+					} else if (err.code === 'auth/wrong-password') {
+						msg.textContent = 'Wrong password.';
+					} else if (err.code === 'auth/invalid-email') {
+						msg.textContent = 'Invalid email format.';
+					} else if (err.code === 'auth/too-many-requests') {
+						msg.textContent = 'Too many failed attempts. Try again later.';
+					} else {
+						msg.textContent = 'Login failed: ' + (err.message || 'Unknown error');
+					}
+				}
+			});
+			}
+
+			// Logout functionality
+			const logoutBtn = document.getElementById('logoutBtn');
+			if (logoutBtn) {
+				logoutBtn.addEventListener('click', async function() {
+					try {
+						await signOut();
+						localStorage.removeItem('carshop_admin_authed');
+						location.reload();
+					} catch (err) {
+						console.error('Logout error:', err);
+					}
+				});
+			}
+		});
+	</script>
+	<script type="module" src="./admin.js"></script>
+</body>
+</html>
+

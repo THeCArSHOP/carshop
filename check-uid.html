@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check User UID</title>
+</head>
+<body>
+    <h1>User UID Check</h1>
+    <div id="result"></div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+        
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        
+        async function checkUID() {
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                const user = userCredential.user;
+                
+                document.getElementById('result').innerHTML = `
+                    <h2>✅ Login Successful!</h2>
+                    <p><strong>User UID:</strong> ${user.uid}</p>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>Display Name:</strong> ${user.displayName || 'Not set'}</p>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h2>❌ Login Failed</h2>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        checkUID();
+    </script>
+</body>
+</html>

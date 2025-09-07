@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Firestore Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Minimal Firestore Connection Test</h1>
+    
+    <div id="status" class="status info">Initializing...</div>
+    <div id="auth-status" class="status info">Not authenticated</div>
+    <div id="test-results"></div>
+    
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="testAuth()">Test Authentication</button>
+    <button onclick="testWrite()">Test Write</button>
+    <button onclick="testRead()">Test Read</button>
+
+    <script type="module">
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+        let app, auth, db;
+        let isAuthenticated = false;
+
+        // Initialize Firebase
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            
+            document.getElementById('status').innerHTML = 'Firebase initialized successfully';
+            document.getElementById('status').className = 'status success';
+            console.log('Firebase initialized:', app);
+        } catch (error) {
+            document.getElementById('status').innerHTML = 'Firebase initialization failed: ' + error.message;
+            document.getElementById('status').className = 'status error';
+            console.error('Firebase initialization error:', error);
+        }
+
+        // Test basic connection
+        window.testConnection = async function() {
+            try {
+                const result = document.getElementById('test-results');
+                result.innerHTML = '<div class="status info">Testing connection...</div>';
+                
+                // Try to get a simple collection reference
+                const testCollection = collection(db, 'test_connection');
+                result.innerHTML = '<div class="status success">Connection test passed - collection reference created</div>';
+                console.log('Connection test passed');
+            } catch (error) {
+                const result = document.getElementById('test-results');
+                result.innerHTML = '<div class="status error">Connection test failed: ' + error.message + '</div>';
+                console.error('Connection test failed:', error);
+            }
+        };
+
+        // Test authentication
+        window.testAuth = async function() {
+            try {
+                const result = document.getElementById('test-results');
+                result.innerHTML = '<div class="status info">Testing authentication...</div>';
+                
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                isAuthenticated = true;
+                
+                document.getElementById('auth-status').innerHTML = 'Authenticated as: ' + userCredential.user.email;
+                document.getElementById('auth-status').className = 'status success';
+                
+                result.innerHTML = '<div class="status success">Authentication successful</div>';
+                console.log('Authentication successful:', userCredential.user);
+            } catch (error) {
+                const result = document.getElementById('test-results');
+                result.innerHTML = '<div class="status error">Authentication failed: ' + error.message + '</div>';
+                document.getElementById('auth-status').innerHTML = 'Authentication failed: ' + error.message;
+                document.getElementById('auth-status').className = 'status error';
+                console.error('Authentication failed:', error);
+            }
+        };
+
+        // Test write operation
+        window.testWrite = async function() {
+            if (!isAuthenticated) {
+                document.getElementById('test-results').innerHTML = '<div class="status error">Please authenticate first</div>';
+                return;
+            }
+
+            try {
+                const result = document.getElementById('test-results');
+                result.innerHTML = '<div class="status info">Testing write operation...</div>';
+                
+                const testData = {
+                    message: 'Test write from minimal test page',
+                    timestamp: serverTimestamp(),
+                    testId: Date.now()
+                };
+                
+                const docRef = await addDoc(collection(db, 'minimal_test'), testData);
+                
+                result.innerHTML = '<div class="status success">Write test successful! Document ID: ' + docRef.id + '</div>';
+                console.log('Write test successful:', docRef.id);
+            } catch (error) {
+                const result = document.getElementById('test-results');
+                result.innerHTML = '<div class="status error">Write test failed: ' + error.message + '</div>';
+                console.error('Write test failed:', error);
+            }
+        };
+
+        // Test read operation
+        window.testRead = async function() {
+            try {
+                const result = document.getElementById('test-results');
+                result.innerHTML = '<div class="status info">Testing read operation...</div>';
+                
+                const querySnapshot = await getDocs(collection(db, 'minimal_test'));
+                const docs = [];
+                querySnapshot.forEach((doc) => {
+                    docs.push({ id: doc.id, ...doc.data() });
+                });
+                
+                result.innerHTML = '<div class="status success">Read test successful! Found ' + docs.length + ' documents</div>';
+                console.log('Read test successful:', docs);
+            } catch (error) {
+                const result = document.getElementById('test-results');
+                result.innerHTML = '<div class="status error">Read test failed: ' + error.message + '</div>';
+                console.error('Read test failed:', error);
+            }
+        };
+    </script>
+</body>
+</html>

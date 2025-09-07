@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Compare Cars - Car Shop</title>
+	<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+	<header>
+		<div style="display:flex;align-items:center;gap:10px">
+			<button id="openDrawer" class="hamburger" aria-label="Open menu"><span></span></button>
+			<a href="index.html" class="logo">
+				<span class="logo-icon">🚗</span>
+				Car Shop
+			</a>
+		</div>
+		<nav>
+			<a href="index.html">Home</a>
+			<a href="inventory.html">Inventory</a>
+			<a href="favorites.html">Favorites</a>
+			<a href="compare.html">Compare</a>
+			<a href="admin.html">Admin</a>
+		</nav>
+	</header>
+	<div id="backdrop" class="backdrop"></div>
+	<aside id="drawer" class="drawer" aria-label="Site menu">
+		<h4>Navigate</h4>
+		<a href="index.html">Home</a>
+		<a href="inventory.html">Inventory</a>
+		<a href="favorites.html">Favorites</a>
+		<a href="compare.html">Compare</a>
+		<a href="admin.html">Admin</a>
+	</aside>
+
+	<main>
+		<section class="hero">
+			<div class="hero-text">
+				<h2 class="reveal-up">Compare Cars</h2>
+				<p class="reveal-up" style="transition-delay:.05s">Compare up to 2 cars side by side to make the best decision.</p>
+			</div>
+		</section>
+
+		<section class="section">
+			<div class="compare-container">
+				<div class="compare-header">
+					<h3>Select Cars to Compare</h3>
+					<p>Choose up to 2 cars from the inventory below</p>
+				</div>
+				
+				<div class="compare-selection">
+					<div class="car-selector">
+						<label>Car 1</label>
+						<select id="car1Select" class="compare-select">
+							<option value="">Select first car...</option>
+						</select>
+						<button id="removeCar1" class="remove-btn" style="display:none;">✕</button>
+					</div>
+					<div class="car-selector">
+						<label>Car 2</label>
+						<select id="car2Select" class="compare-select">
+							<option value="">Select second car...</option>
+						</select>
+						<button id="removeCar2" class="remove-btn" style="display:none;">✕</button>
+					</div>
+				</div>
+
+				<div id="compareResults" class="compare-results" style="display:none;">
+					<div class="compare-cars">
+						<div class="car-card" id="car1Card">
+							<div class="car-image">
+								<img id="car1Image" src="" alt="Car 1" />
+							</div>
+							<div class="car-details">
+								<h4 id="car1Title"></h4>
+								<div class="car-specs">
+									<div class="spec-row">
+										<span class="spec-label">Price:</span>
+										<span class="spec-value" id="car1Price"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Year:</span>
+										<span class="spec-value" id="car1Year"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Mileage:</span>
+										<span class="spec-value" id="car1Mileage"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Body Type:</span>
+										<span class="spec-value" id="car1Body"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Color:</span>
+										<span class="spec-value" id="car1Color"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Engine:</span>
+										<span class="spec-value" id="car1Engine"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Transmission:</span>
+										<span class="spec-value" id="car1Transmission"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Fuel Type:</span>
+										<span class="spec-value" id="car1Fuel"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Features:</span>
+										<span class="spec-value" id="car1Features"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Status:</span>
+										<span class="spec-value" id="car1Status"></span>
+									</div>
+								</div>
+								<div class="car-actions">
+									<button class="fav-btn" data-car-id="">👍</button>
+									<button class="view-btn">View Details</button>
+								</div>
+							</div>
+						</div>
+
+						<div class="vs-divider">
+							<span>VS</span>
+						</div>
+
+						<div class="car-card" id="car2Card">
+							<div class="car-image">
+								<img id="car2Image" src="" alt="Car 2" />
+							</div>
+							<div class="car-details">
+								<h4 id="car2Title"></h4>
+								<div class="car-specs">
+									<div class="spec-row">
+										<span class="spec-label">Price:</span>
+										<span class="spec-value" id="car2Price"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Year:</span>
+										<span class="spec-value" id="car2Year"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Mileage:</span>
+										<span class="spec-value" id="car2Mileage"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Body Type:</span>
+										<span class="spec-value" id="car2Body"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Color:</span>
+										<span class="spec-value" id="car2Color"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Engine:</span>
+										<span class="spec-value" id="car2Engine"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Transmission:</span>
+										<span class="spec-value" id="car2Transmission"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Fuel Type:</span>
+										<span class="spec-value" id="car2Fuel"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Features:</span>
+										<span class="spec-value" id="car2Features"></span>
+									</div>
+									<div class="spec-row">
+										<span class="spec-label">Status:</span>
+										<span class="spec-value" id="car2Status"></span>
+									</div>
+								</div>
+								<div class="car-actions">
+									<button class="fav-btn" data-car-id="">👍</button>
+									<button class="view-btn">View Details</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<footer>
+		<div class="footer-content">
+			<a href="index.html" class="footer-brand">
+				<span class="footer-icon">🚗</span>
+				Car Shop
+			</a>
+			<div class="footer-links">
+				<a href="#" id="contactEmail">📧 Contact</a>
+				<a href="#" id="contactPhone">📞 Call</a>
+				<a href="#" id="contactInstagram" target="_blank" rel="noreferrer">📷 Instagram</a>
+			</div>
+		</div>
+		<div class="footer-info">
+			© <span id="footerYear"></span> Car Shop - Premium Automotive Solutions
+		</div>
+	</footer>
+
+	<!-- Configuration File -->
+	<script src="config.js"></script>
+
+	<script>
+		var fy = document.getElementById('footerYear');
+		if (fy) fy.textContent = new Date().getFullYear();
+		
+		// Update contact links from config
+		document.addEventListener('DOMContentLoaded', function() {
+			const contactEmail = document.getElementById('contactEmail');
+			const contactPhone = document.getElementById('contactPhone');
+			const contactInstagram = document.getElementById('contactInstagram');
+			
+			if (contactEmail) contactEmail.href = 'mailto:' + window.getContactEmail();
+			if (contactPhone) contactPhone.href = 'tel:' + window.getPhoneNumber();
+			if (contactInstagram) contactInstagram.href = window.getInstagramUrl();
+		});
+		
+		window.FIREBASE_CONFIG = {
+			apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+			authDomain: "car--shop.firebaseapp.com",
+			projectId: "car--shop",
+			storageBucket: "car--shop.firebasestorage.app",
+			messagingSenderId: "385403019174",
+			appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+			measurementId: "G-B9KZCXJVK9"
+		};
+
+		(function(){
+			var drawer = document.getElementById('drawer');
+			var openBtn = document.getElementById('openDrawer');
+			var backdrop = document.getElementById('backdrop');
+			function close(){ drawer.classList.remove('open'); backdrop.classList.remove('show'); }
+			function open(){ drawer.classList.add('open'); backdrop.classList.add('show'); }
+			if (openBtn) openBtn.addEventListener('click', open);
+			if (backdrop) backdrop.addEventListener('click', close);
+		})();
+	</script>
+	<script type="module" src="compare.js"></script>
+</body>
+</html>

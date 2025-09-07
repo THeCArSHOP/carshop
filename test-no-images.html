@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Car Creation (No Images)</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #0f1115; color: #e7e9ee; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .form-group { margin: 15px 0; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; background: #11151d; color: #e7e9ee; border: 1px solid #242938; border-radius: 6px; }
+        button { padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        .result { margin: 15px 0; padding: 15px; background: #1f2937; border-radius: 6px; }
+        .success { background: #065f46; }
+        .error { background: #7f1d1d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Car Creation (No Images)</h1>
+        <p>This will test creating a car with only URL images (no file uploads).</p>
+        
+        <form id="testForm">
+            <div class="form-group">
+                <label>Make:</label>
+                <input type="text" name="make" value="Toyota" required>
+            </div>
+            <div class="form-group">
+                <label>Model:</label>
+                <input type="text" name="model" value="Camry" required>
+            </div>
+            <div class="form-group">
+                <label>Year:</label>
+                <input type="number" name="year" value="2024" required>
+            </div>
+            <div class="form-group">
+                <label>Price:</label>
+                <input type="number" name="price" value="25000" required>
+            </div>
+            <div class="form-group">
+                <label>Mileage:</label>
+                <input type="number" name="mileage" value="1000" required>
+            </div>
+            <div class="form-group">
+                <label>Thumbnail URL:</label>
+                <input type="url" name="thumbnail" value="https://via.placeholder.com/300x200?text=Test+Car">
+            </div>
+            <div class="form-group">
+                <label>Image 1 URL:</label>
+                <input type="url" name="image1" value="https://via.placeholder.com/600x400?text=Image+1">
+            </div>
+            <div class="form-group">
+                <label>Image 2 URL:</label>
+                <input type="url" name="image2" value="https://via.placeholder.com/600x400?text=Image+2">
+            </div>
+            
+            <button type="submit">Create Test Car</button>
+        </form>
+        
+        <div id="result" class="result" style="display:none;"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app, 'cars');
+
+        let currentUser = null;
+
+        async function login() {
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                currentUser = userCredential.user;
+                console.log('Login successful:', currentUser.uid);
+                return true;
+            } catch (error) {
+                console.error('Login failed:', error);
+                return false;
+            }
+        }
+
+        async function createTestCar(formData) {
+            const imageUrls = [];
+            for (let i = 1; i <= 5; i++) {
+                const url = formData.get(`image${i}`);
+                if (url && url.trim()) {
+                    imageUrls.push(url.trim());
+                }
+            }
+
+            const carData = {
+                make: formData.get('make'),
+                model: formData.get('model'),
+                year: Number(formData.get('year')),
+                price: Number(formData.get('price')),
+                mileage: Number(formData.get('mileage')),
+                thumbnail: formData.get('thumbnail'),
+                images: imageUrls,
+                createdAt: serverTimestamp()
+            };
+
+            const docRef = await addDoc(collection(db, 'cars'), carData);
+            return docRef.id;
+        }
+
+        document.getElementById('testForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.textContent = 'Logging in...';
+
+            try {
+                // Login first
+                const loggedIn = await login();
+                if (!loggedIn) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'Login failed!';
+                    return;
+                }
+
+                resultDiv.textContent = 'Creating car...';
+
+                // Create car
+                const formData = new FormData(e.target);
+                const carId = await createTestCar(formData);
+
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `✅ Car created successfully!<br>ID: ${carId}<br><a href="inventory.html" target="_blank">View in Inventory</a>`;
+
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

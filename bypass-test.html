@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bypass Test</title>
+</head>
+<body>
+    <h1>Firestore Bypass Test</h1>
+    <button onclick="testPublicWrite()">Test Public Write</button>
+    <div id="result"></div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+        
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+        
+        const app = initializeApp(config);
+        const db = getFirestore(app, 'cars-database');
+        
+        window.testPublicWrite = async function() {
+            try {
+                console.log('Testing public write...');
+                const testData = {
+                    name: 'Test Car',
+                    price: 1000,
+                    createdAt: serverTimestamp(),
+                    test: true
+                };
+                
+                const docRef = await addDoc(collection(db, 'cars'), testData);
+                document.getElementById('result').innerHTML = `✅ SUCCESS! Document ID: ${docRef.id}`;
+                console.log('Write successful:', docRef.id);
+            } catch (error) {
+                document.getElementById('result').innerHTML = `❌ ERROR: ${error.message}`;
+                console.error('Write failed:', error);
+            }
+        };
+    </script>
+</body>
+</html>

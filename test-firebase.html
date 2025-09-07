@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Test</title>
+</head>
+<body>
+    <h1>Firebase Connection Test</h1>
+    <div id="status">Testing...</div>
+    <button onclick="testAuth()">Test Authentication</button>
+    <div id="result"></div>
+
+    <script>
+        window.FIREBASE_CONFIG = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.appspot.com"
+        };
+    </script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+
+        const app = initializeApp(window.FIREBASE_CONFIG);
+        const auth = getAuth(app);
+
+        document.getElementById('status').textContent = 'Firebase initialized successfully!';
+
+        window.testAuth = async function() {
+            const result = document.getElementById('result');
+            result.textContent = 'Testing authentication...';
+            
+            try {
+                const user = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                result.textContent = 'SUCCESS! User logged in: ' + user.user.uid;
+                result.style.color = 'green';
+            } catch (error) {
+                result.textContent = 'ERROR: ' + error.code + ' - ' + error.message;
+                result.style.color = 'red';
+                console.error('Auth error:', error);
+            }
+        };
+    </script>
+</body>
+</html>

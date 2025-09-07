@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Write Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firestore Write Test</h1>
+        <p>This page will help us test and fix Firestore write permissions step by step.</p>
+        
+        <div id="status" class="status info">
+            Ready to test...
+        </div>
+
+        <div class="test-section">
+            <h3>Step 1: Authentication Test</h3>
+            <button onclick="testAuth()">Test Login</button>
+            <button onclick="alert('Button test works!')">Test Button</button>
+            <div id="authResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 2: Database Connection Test</h3>
+            <button onclick="testConnection()">Test Database Connection</button>
+            <div id="connectionResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 3: Write Permission Test</h3>
+            <button onclick="testWrite()">Test Write to Cars Collection</button>
+            <div id="writeResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 4: Read Permission Test</h3>
+            <button onclick="testRead()">Test Read from Cars Collection</button>
+            <div id="readResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Step 5: Create Test Car</h3>
+            <input type="text" id="carName" placeholder="Car Name" value="Test Car">
+            <input type="number" id="carPrice" placeholder="Price" value="25000">
+            <input type="text" id="carMake" placeholder="Make" value="Toyota">
+            <input type="text" id="carColor" placeholder="Color" value="Red">
+            <button onclick="createTestCar()">Create Test Car</button>
+            <div id="createResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Current Rules Status</h3>
+            <button onclick="checkRules()">Check Current Rules</button>
+            <div id="rulesResult"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, serverTimestamp, doc, setDoc } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app, 'cars-database');
+
+        let currentUser = null;
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            container.appendChild(div);
+        }
+
+        async function testAuth() {
+            try {
+                updateStatus('Testing authentication...', 'info');
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                currentUser = userCredential.user;
+                addResult('authResult', `✅ Login successful! UID: ${currentUser.uid}`, 'success');
+                updateStatus('Authentication successful!', 'success');
+            } catch (error) {
+                addResult('authResult', `❌ Login failed: ${error.message}`, 'error');
+                updateStatus('Authentication failed!', 'error');
+            }
+        }
+
+        // Make functions global so buttons can access them
+        window.testAuth = testAuth;
+        window.testConnection = testConnection;
+        window.testWrite = testWrite;
+        window.testRead = testRead;
+        window.createTestCar = createTestCar;
+        window.checkRules = checkRules;
+
+        async function testConnection() {
+            try {
+                updateStatus('Testing database connection...', 'info');
+                console.log('Testing database connection...');
+                // Try to read from a collection to test connection
+                const testCollection = collection(db, 'test');
+                await getDocs(testCollection);
+                addResult('connectionResult', '✅ Database connection successful!', 'success');
+                updateStatus('Database connection successful!', 'success');
+            } catch (error) {
+                console.error('Connection error:', error);
+                addResult('connectionResult', `❌ Connection failed: ${error.message}`, 'error');
+                updateStatus('Database connection failed!', 'error');
+            }
+        }
+
+        async function testWrite() {
+            try {
+                console.log('Testing write permissions...');
+                updateStatus('Testing write permissions...', 'info');
+                if (!currentUser) {
+                    addResult('writeResult', '❌ Please login first!', 'error');
+                    return;
+                }
+
+                const testData = {
+                    name: 'Write Test',
+                    price: 1000,
+                    createdAt: serverTimestamp(),
+                    test: true
+                };
+
+                console.log('Attempting to write to cars collection...');
+                const docRef = await addDoc(collection(db, 'cars'), testData);
+                addResult('writeResult', `✅ Write successful! Document ID: ${docRef.id}`, 'success');
+                updateStatus('Write permissions working!', 'success');
+            } catch (error) {
+                console.error('Write error:', error);
+                addResult('writeResult', `❌ Write failed: ${error.message}`, 'error');
+                addResult('writeResult', `Error code: ${error.code}`, 'error');
+                updateStatus('Write permissions failed!', 'error');
+            }
+        }
+
+        async function testRead() {
+            try {
+                updateStatus('Testing read permissions...', 'info');
+                const carsCollection = collection(db, 'cars');
+                const snapshot = await getDocs(carsCollection);
+                const cars = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                addResult('readResult', `✅ Read successful! Found ${cars.length} cars`, 'success');
+                if (cars.length > 0) {
+                    addResult('readResult', `First car: ${JSON.stringify(cars[0], null, 2)}`, 'info');
+                }
+                updateStatus('Read permissions working!', 'success');
+            } catch (error) {
+                addResult('readResult', `❌ Read failed: ${error.message}`, 'error');
+                updateStatus('Read permissions failed!', 'error');
+            }
+        }
+
+        async function createTestCar() {
+            try {
+                updateStatus('Creating test car...', 'info');
+                if (!currentUser) {
+                    addResult('createResult', '❌ Please login first!', 'error');
+                    return;
+                }
+
+                const carData = {
+                    name: document.getElementById('carName').value,
+                    price: parseInt(document.getElementById('carPrice').value),
+                    make: document.getElementById('carMake').value,
+                    color: document.getElementById('carColor').value,
+                    createdAt: serverTimestamp(),
+                    testCar: true
+                };
+
+                const docRef = await addDoc(collection(db, 'cars'), carData);
+                addResult('createResult', `✅ Car created successfully! ID: ${docRef.id}`, 'success');
+                updateStatus('Car creation successful!', 'success');
+            } catch (error) {
+                addResult('createResult', `❌ Car creation failed: ${error.message}`, 'error');
+                addResult('createResult', `Error code: ${error.code}`, 'error');
+                updateStatus('Car creation failed!', 'error');
+            }
+        }
+
+        async function checkRules() {
+            try {
+                updateStatus('Checking current rules...', 'info');
+                // Try to write to a test collection to see what error we get
+                const testData = { test: true, timestamp: serverTimestamp() };
+                await addDoc(collection(db, 'test'), testData);
+                addResult('rulesResult', '✅ Rules allow write access!', 'success');
+            } catch (error) {
+                if (error.code === 'permission-denied') {
+                    addResult('rulesResult', '❌ Rules are blocking write access!', 'error');
+                    addResult('rulesResult', 'You need to update Firestore security rules.', 'error');
+                } else {
+                    addResult('rulesResult', `❌ Error: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Auto-login on page load
+        window.addEventListener('load', testAuth);
+    </script>
+</body>
+</html>

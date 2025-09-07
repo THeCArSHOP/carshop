@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Diagnostic Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Firebase Project Diagnostic Tool</h1>
+    
+    <div id="diagnostic-results"></div>
+    
+    <button onclick="runDiagnostics()">Run Full Diagnostics</button>
+    <button onclick="checkProjectStatus()">Check Project Status</button>
+    <button onclick="testNetworkConnectivity()">Test Network Connectivity</button>
+
+    <script type="module">
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, serverTimestamp, connectFirestoreEmulator } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+        let app, auth, db;
+        const results = document.getElementById('diagnostic-results');
+
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function addCodeResult(title, code) {
+            const div = document.createElement('div');
+            div.innerHTML = `<h3>${title}</h3><pre>${JSON.stringify(code, null, 2)}</pre>`;
+            results.appendChild(div);
+        }
+
+        // Run comprehensive diagnostics
+        window.runDiagnostics = async function() {
+            results.innerHTML = '';
+            addResult('Starting comprehensive Firebase diagnostics...', 'info');
+            
+            // 1. Check Firebase initialization
+            try {
+                app = initializeApp(firebaseConfig);
+                addResult('✓ Firebase app initialized successfully', 'success');
+                addCodeResult('Firebase App Config', firebaseConfig);
+            } catch (error) {
+                addResult('✗ Firebase initialization failed: ' + error.message, 'error');
+                return;
+            }
+
+            // 2. Check Auth initialization
+            try {
+                auth = getAuth(app);
+                addResult('✓ Firebase Auth initialized successfully', 'success');
+            } catch (error) {
+                addResult('✗ Firebase Auth initialization failed: ' + error.message, 'error');
+            }
+
+            // 3. Check Firestore initialization
+            try {
+                db = getFirestore(app);
+                addResult('✓ Firebase Firestore initialized successfully', 'success');
+            } catch (error) {
+                addResult('✗ Firebase Firestore initialization failed: ' + error.message, 'error');
+            }
+
+            // 4. Test authentication
+            try {
+                addResult('Testing authentication...', 'info');
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                addResult('✓ Authentication successful', 'success');
+                addCodeResult('User Info', {
+                    uid: userCredential.user.uid,
+                    email: userCredential.user.email,
+                    emailVerified: userCredential.user.emailVerified
+                });
+            } catch (error) {
+                addResult('✗ Authentication failed: ' + error.message, 'error');
+                addResult('Error code: ' + error.code, 'error');
+            }
+
+            // 5. Test Firestore connection
+            try {
+                addResult('Testing Firestore connection...', 'info');
+                const testCollection = collection(db, 'diagnostic_test');
+                addResult('✓ Firestore collection reference created', 'success');
+            } catch (error) {
+                addResult('✗ Firestore connection failed: ' + error.message, 'error');
+            }
+
+            // 6. Test network connectivity to Firebase
+            await testNetworkConnectivity();
+
+            // 7. Check for common issues
+            checkCommonIssues();
+        };
+
+        // Check project status
+        window.checkProjectStatus = async function() {
+            results.innerHTML = '';
+            addResult('Checking Firebase project status...', 'info');
+            
+            // Check if we can reach Firebase services
+            const endpoints = [
+                'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
+                'https://firestore.googleapis.com/v1/projects/car--shop/databases/(default)/documents',
+                'https://firestore.googleapis.com/v1/projects/car--shop/databases/(default)/documents/test'
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.status === 400) {
+                        addResult(`✓ Endpoint reachable: ${endpoint} (400 - expected for GET)`, 'success');
+                    } else {
+                        addResult(`? Endpoint response: ${endpoint} (${response.status})`, 'warning');
+                    }
+                } catch (error) {
+                    addResult(`✗ Endpoint unreachable: ${endpoint} - ${error.message}`, 'error');
+                }
+            }
+        };
+
+        // Test network connectivity
+        window.testNetworkConnectivity = async function() {
+            addResult('Testing network connectivity to Firebase services...', 'info');
+            
+            const tests = [
+                {
+                    name: 'Google APIs',
+                    url: 'https://www.googleapis.com',
+                    expected: 'reachable'
+                },
+                {
+                    name: 'Firebase Auth',
+                    url: 'https://identitytoolkit.googleapis.com',
+                    expected: 'reachable'
+                },
+                {
+                    name: 'Firestore API',
+                    url: 'https://firestore.googleapis.com',
+                    expected: 'reachable'
+                }
+            ];
+
+            for (const test of tests) {
+                try {
+                    const response = await fetch(test.url, { method: 'HEAD' });
+                    addResult(`✓ ${test.name}: Reachable (${response.status})`, 'success');
+                } catch (error) {
+                    addResult(`✗ ${test.name}: Unreachable - ${error.message}`, 'error');
+                }
+            }
+        };
+
+        // Check for common issues
+        function checkCommonIssues() {
+            addResult('Checking for common issues...', 'info');
+            
+            // Check browser compatibility
+            if (typeof fetch === 'undefined') {
+                addResult('✗ Fetch API not available - browser compatibility issue', 'error');
+            } else {
+                addResult('✓ Fetch API available', 'success');
+            }
+
+            // Check for HTTPS
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                addResult('⚠ Not using HTTPS - Firebase requires HTTPS in production', 'warning');
+            } else {
+                addResult('✓ Using HTTPS or localhost', 'success');
+            }
+
+            // Check for CORS issues
+            addResult('ℹ If you see CORS errors, check your Firebase project settings', 'info');
+            
+            // Check for billing issues
+            addResult('ℹ If you see quota exceeded errors, check your Firebase billing', 'info');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            addResult('Firebase Diagnostic Tool loaded. Click "Run Full Diagnostics" to start.', 'info');
+        });
+    </script>
+</body>
+</html>

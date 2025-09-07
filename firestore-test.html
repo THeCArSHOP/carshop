@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Firestore Connection Test</h1>
+    <div id="results"></div>
+    <button onclick="testConnection()">Test Firestore Connection</button>
+    <button onclick="testAuth()">Test Authentication</button>
+    <button onclick="testWrite()">Test Write Operation</button>
+    <button onclick="testRead()">Test Read Operation</button>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        window.testConnection = async function() {
+            try {
+                log('Testing Firestore connection...', 'info');
+                log(`Firebase App: ${app.name}`, 'info');
+                log(`Firestore DB: ${db.app.name}`, 'info');
+                log(`Project ID: ${config.projectId}`, 'info');
+                log('Firestore connection initialized successfully!', 'success');
+            } catch (error) {
+                log(`Firestore connection failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.testAuth = async function() {
+            try {
+                log('Testing authentication...', 'info');
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                log(`Authentication successful! User: ${userCredential.user.email}`, 'success');
+                log(`User UID: ${userCredential.user.uid}`, 'info');
+            } catch (error) {
+                log(`Authentication failed: ${error.message}`, 'error');
+            }
+        };
+
+        window.testWrite = async function() {
+            try {
+                log('Testing write operation...', 'info');
+                
+                // First ensure we're authenticated
+                if (!auth.currentUser) {
+                    log('Not authenticated, signing in first...', 'info');
+                    await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                    log('Authentication successful for write test', 'success');
+                }
+                
+                const testData = {
+                    test: true,
+                    message: 'Test write operation',
+                    timestamp: serverTimestamp(),
+                    user: auth.currentUser ? auth.currentUser.uid : 'anonymous'
+                };
+                
+                log('Attempting to write to cars collection...', 'info');
+                const docRef = await addDoc(collection(db, 'cars'), testData);
+                log(`Write successful! Document ID: ${docRef.id}`, 'success');
+            } catch (error) {
+                log(`Write failed: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`, 'error');
+                log(`Error details: ${JSON.stringify(error)}`, 'error');
+            }
+        };
+
+        window.testRead = async function() {
+            try {
+                log('Testing read operation...', 'info');
+                const querySnapshot = await getDocs(collection(db, 'cars'));
+                log(`Read successful! Found ${querySnapshot.size} documents in cars collection`, 'success');
+                querySnapshot.forEach((doc) => {
+                    log(`Document ${doc.id}: ${JSON.stringify(doc.data())}`, 'info');
+                });
+            } catch (error) {
+                log(`Read failed: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`, 'error');
+            }
+        };
+
+        // Auto-run connection test on load
+        window.testConnection();
+    </script>
+</body>
+</html>

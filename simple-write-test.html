@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Write Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Simple Write Test</h1>
+    <div id="results"></div>
+    <button onclick="testWrite()">Test Write to Cars Collection</button>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+
+        const config = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        window.testWrite = async function() {
+            try {
+                log('Starting write test...', 'info');
+                
+                // Step 1: Authenticate
+                log('Step 1: Authenticating...', 'info');
+                const userCredential = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                log(`✓ Authenticated as: ${userCredential.user.email}`, 'success');
+                log(`User UID: ${userCredential.user.uid}`, 'info');
+                
+                // Step 2: Check auth state
+                log('Step 2: Checking auth state...', 'info');
+                if (!auth.currentUser) {
+                    throw new Error('Authentication failed - no current user');
+                }
+                log(`✓ Auth state confirmed: ${auth.currentUser.uid}`, 'success');
+                
+                // Step 3: Prepare data
+                log('Step 3: Preparing car data...', 'info');
+                const carData = {
+                    make: 'Test Car',
+                    model: 'Write Test',
+                    year: 2024,
+                    price: 25000,
+                    mileage: 1000,
+                    body: 'Sedan',
+                    color: 'Blue',
+                    featured: false,
+                    createdAt: serverTimestamp()
+                };
+                log(`Car data: ${JSON.stringify(carData)}`, 'info');
+                
+                // Step 4: Write to Firestore
+                log('Step 4: Writing to Firestore...', 'info');
+                const docRef = await addDoc(collection(db, 'cars'), carData);
+                log(`✓ Write successful! Document ID: ${docRef.id}`, 'success');
+                
+                log('=== WRITE TEST COMPLETED SUCCESSFULLY ===', 'success');
+                
+            } catch (error) {
+                log(`✗ Write test failed: ${error.message}`, 'error');
+                log(`Error code: ${error.code}`, 'error');
+                log(`Full error: ${JSON.stringify(error)}`, 'error');
+            }
+        };
+
+        log('Simple Write Test loaded', 'info');
+    </script>
+</body>
+</html>

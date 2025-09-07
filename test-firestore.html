@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Firestore Connection</title>
+</head>
+<body>
+    <h1>Firestore Connection Test</h1>
+    <div id="status">Testing...</div>
+    <button id="testBtn">Test Firestore Write</button>
+    <div id="result"></div>
+
+    <script>
+        window.FIREBASE_CONFIG = {
+            apiKey: "AIzaSyC87832Gxt03UlZOSbxoU46hkKqF-Pvpkc",
+            authDomain: "car--shop.firebaseapp.com",
+            projectId: "car--shop",
+            storageBucket: "car--shop.firebasestorage.app",
+            messagingSenderId: "385403019174",
+            appId: "1:385403019174:web:c8a2c5a635d2bbbf0fb967",
+            measurementId: "G-B9KZCXJVK9"
+        };
+    </script>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+
+        const config = window.FIREBASE_CONFIG;
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById('status').textContent = 'Firebase initialized';
+
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            try {
+                // First, sign in
+                document.getElementById('result').textContent = 'Signing in...';
+                const user = await signInWithEmailAndPassword(auth, 'charbel04rk@gmail.com', 'charbel');
+                document.getElementById('result').textContent = 'Signed in as: ' + user.user.email;
+
+                // Then try to write to Firestore
+                document.getElementById('result').textContent += '\nWriting to Firestore...';
+                const testData = {
+                    test: true,
+                    timestamp: serverTimestamp(),
+                    message: 'This is a test document'
+                };
+                
+                const docRef = await addDoc(collection(db, 'test'), testData);
+                document.getElementById('result').textContent += '\nSUCCESS! Document written with ID: ' + docRef.id;
+                
+            } catch (error) {
+                document.getElementById('result').textContent = 'ERROR: ' + error.message;
+                console.error('Test error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
